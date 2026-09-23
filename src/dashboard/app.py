@@ -170,6 +170,7 @@ with col_ind:
         list(indicator_dict.keys()),
         index=1 if len(indicator_dict) > 1 else 0
     )
+chosen_indicator = indicator_dict[selected_ind_label]
 ind_type = chosen_indicator.get("type", "qualitative")
 ind_id = chosen_indicator.get("indicator_id")
 ind_name = chosen_indicator.get("name")
