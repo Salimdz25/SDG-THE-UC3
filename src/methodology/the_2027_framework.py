@@ -9,6 +9,24 @@ from typing import Dict, Any, List, Optional
 
 TAXONOMY_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "the_2027_taxonomy.json"
 
+# Constantes pour le filtre « Type d'indicateurs »
+FILTER_PROOF = "Nécessitant une preuve"
+FILTER_NUMERIC = "Données numériques à renseigner par l’université"
+FILTER_BIBLIO = "Données bibliométriques — consultation uniquement"
+FILTER_ALL = "Tous les indicateurs"
+
+FILTER_OPTIONS_MAP = {
+    FILTER_PROOF: "proof",
+    "Requiring documentary evidence": "proof",
+    FILTER_NUMERIC: "numeric",
+    "Données numériques à renseigner par l'université": "numeric",
+    "Numerical data to be provided by university": "numeric",
+    FILTER_BIBLIO: "biblio",
+    "Bibliometric data — consultation only": "biblio",
+    FILTER_ALL: "all",
+    "All indicators": "all"
+}
+
 class THE2027Framework:
     def __init__(self, taxonomy_path: Optional[Path] = None):
         self.taxonomy_path = taxonomy_path or TAXONOMY_PATH
@@ -63,6 +81,59 @@ class THE2027Framework:
                 item["sdg_name"] = sdg.get("name")
                 indicators.append(item)
         return indicators
+
+    def filter_indicators(self, indicators: List[Dict[str, Any]], filter_type: str) -> List[Dict[str, Any]]:
+        """
+        Filtre dynamiquement une liste d'indicateurs selon la catégorie THE 2027 choisie :
+        - 'Nécessitant une preuve' : indicateurs qualitatifs et mixtes exigeant une preuve documentaire.
+        - 'Données numériques à renseigner par l’université' : indicateurs quantitatifs/mixtes à saisir par l'UC3.
+          Exclut formellement les indicateurs bibliométriques (Scopus) et brevets (LexisNexis).
+        - 'Données bibliométriques — consultation uniquement' : indicateurs bibliométriques externes.
+        - 'Tous les indicateurs' : l'ensemble des indicateurs sans filtre.
+        """
+        cat = FILTER_OPTIONS_MAP.get(filter_type)
+        if not cat:
+            f_lower = (filter_type or "").lower()
+            if "preuve" in f_lower or "evidence" in f_lower or "proof" in f_lower:
+                cat = "proof"
+            elif "numérique" in f_lower or "numerique" in f_lower or "numeric" in f_lower:
+                cat = "numeric"
+            elif "biblio" in f_lower:
+                cat = "biblio"
+            else:
+                cat = "all"
+
+        result = []
+        for ind in indicators:
+            ind_type = ind.get("type", "qualitative")
+            requires_evidence = (
+                ind_type in ("qualitative", "mixed")
+                or ind.get("requires_evidence") is True
+                or ind.get("evidence_required") is True
+                or ind.get("is_mixed") is True
+            )
+
+            if cat == "proof":
+                if requires_evidence:
+                    result.append(ind)
+            elif cat == "numeric":
+                # Données numériques à renseigner par l'université
+                # Exclut formellement les indicateurs bibliométriques et métriques externes non renseignés par l'université
+                is_numeric = (
+                    ind_type == "quantitative"
+                    or ind_type == "mixed"
+                    or ("fields" in ind and ind.get("requires_numerical", False))
+                )
+                if is_numeric and ind_type not in ("bibliometric", "external_metric"):
+                    result.append(ind)
+            elif cat == "biblio":
+                if ind_type == "bibliometric":
+                    result.append(ind)
+            else:
+                # Tous les indicateurs
+                result.append(ind)
+
+        return result
 
     def evaluate_score(
         self,

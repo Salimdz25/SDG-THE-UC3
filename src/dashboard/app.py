@@ -166,9 +166,26 @@ st.divider()
 # =========================================================================
 # ÉTAPE 1 : SÉLECTION DE L'ODD ET DE L'INDICATEUR
 # =========================================================================
-st.subheader("1️⃣ Sélection de l'Indicateur Réglementaire THE 2027")
+st.subheader("1️⃣ Sélection de l'Indicateur Réglementaire THE 2027" if not is_en else "1️⃣ Selection of THE 2027 Regulatory Indicator")
 
-col_sdg, col_ind = st.columns([1, 2])
+# Filtre « Type d’indicateurs » (4 catégories réglementaires)
+FILTER_OPTIONS_FR = [
+    "Nécessitant une preuve",
+    "Données numériques à renseigner par l’université",
+    "Données bibliométriques — consultation uniquement",
+    "Tous les indicateurs",
+]
+
+FILTER_OPTIONS_EN = [
+    "Requiring documentary evidence",
+    "Numerical data to be provided by university",
+    "Bibliometric data — consultation only",
+    "All indicators",
+]
+
+filter_choices = FILTER_OPTIONS_FR if not is_en else FILTER_OPTIONS_EN
+
+col_sdg, col_filter = st.columns([1, 1])
 
 all_sdgs = framework.get_all_sdgs()
 sdg_options = {f"ODD {k} - {v.get('short_name')}": int(k) for k, v in all_sdgs.items()}
@@ -176,23 +193,59 @@ sdg_options = {f"ODD {k} - {v.get('short_name')}": int(k) for k, v in all_sdgs.i
 with col_sdg:
     # Par défaut sur ODD 17 (obligatoire)
     selected_sdg_label = st.selectbox(
-        "Objectif de Développement Durable (ODD) :",
+        "Objectif de Développement Durable (ODD) :" if not is_en else "Sustainable Development Goal (SDG):",
         list(sdg_options.keys()),
-        index=16  # ODD 17
+        index=16,  # ODD 17
+        key="selected_sdg_selectbox"
     )
     chosen_sdg_num = sdg_options[selected_sdg_label]
 
-# Liste des indicateurs pour cet ODD
-indicators_list = framework.get_indicators_for_sdg(chosen_sdg_num)
-indicator_dict = {f"{ind['indicator_id']} : {ind['name']}": ind for ind in indicators_list}
-
-with col_ind:
-    selected_ind_label = st.selectbox(
-        "Indicateur spécifique :",
-        list(indicator_dict.keys()),
-        index=1 if len(indicator_dict) > 1 else 0
+with col_filter:
+    chosen_filter = st.selectbox(
+        "Type d’indicateurs :" if not is_en else "Indicator Type:",
+        filter_choices,
+        index=0,  # 1. « Nécessitant une preuve » — sélectionnée par défaut
+        key="selected_indicator_type_filter",
+        help="Filtrer selon les exigences de soumission THE 2027." if not is_en else "Filter according to THE 2027 submission requirements."
     )
+
+# Liste des indicateurs pour cet ODD filtrés dynamiquement
+raw_indicators_list = framework.get_indicators_for_sdg(chosen_sdg_num)
+indicators_list = framework.filter_indicators(raw_indicators_list, chosen_filter)
+
+# Si aucun indicateur ne correspond au filtre dans cet ODD
+if not indicators_list:
+    st.info(
+        f"ℹ️ **Aucun indicateur du type « {chosen_filter} » n'est présent dans l'ODD {chosen_sdg_num}.**\n\n"
+        "Veuillez sélectionner un autre type d'indicateurs (par ex. *« Données numériques à renseigner par l’université »* ou *« Tous les indicateurs »*) ou choisir un autre ODD."
+        if not is_en else
+        f"ℹ️ **No indicators of type '{chosen_filter}' found in SDG {chosen_sdg_num}.**\n\n"
+        "Please select another indicator type (e.g. *'Numerical data to be provided by university'* or *'All indicators'*) or choose another SDG."
+    )
+    st.stop()
+
+# Dictionnaire des indicateurs filtrés
+indicator_dict = {f"{ind['indicator_id']} : {ind['name']}": ind for ind in indicators_list}
+indicator_labels = list(indicator_dict.keys())
+
+# Réinitialisation propre vers le premier indicateur valide si l'indicateur actif ne correspond plus au filtre
+current_active_ind = st.session_state.get("active_indicator_id")
+target_ind_idx = 0
+if current_active_ind:
+    for idx, lbl in enumerate(indicator_labels):
+        if indicator_dict[lbl].get("indicator_id") == current_active_ind:
+            target_ind_idx = idx
+            break
+
+selected_ind_label = st.selectbox(
+    "Indicateur spécifique :" if not is_en else "Specific Indicator:",
+    indicator_labels,
+    index=target_ind_idx,
+    key=f"ind_select_{chosen_sdg_num}_{chosen_filter}"
+)
+
 chosen_indicator = indicator_dict[selected_ind_label]
+st.session_state["active_indicator_id"] = chosen_indicator.get("indicator_id")
 ind_type = chosen_indicator.get("type", "qualitative")
 ind_id = chosen_indicator.get("indicator_id")
 ind_name = chosen_indicator.get("name")
@@ -303,38 +356,46 @@ if ind_type == "quantitative":
     st.stop()
 
 elif ind_type == "bibliometric":
+    st.warning(
+        "📌 **Données bibliométriques fournies par une source externe selon la méthodologie THE ; aucune saisie universitaire requise**"
+        if not is_en else
+        "📌 **Bibliometric data provided by an external source according to THE methodology; no university entry required**"
+    )
+
     st.info(
         f"📚 **Indicateur Bibliométrique [{ind_id}] :** {ind_name}\n\n"
-        f"• **Type :** `BIBLIOMÉTRIQUE` | "
-        f"• **Poids dans l'ODD :** `{chosen_indicator.get('weight_sdg', 0.0) * 100:.1f}%` | "
+        f"• **Type :** `BIBLIOMÉTRIQUE (CONSULTATION UNIQUEMENT)`\n"
+        f"• **Poids dans l'ODD {chosen_sdg_num} :** `{chosen_indicator.get('weight_sdg', 0.0) * 100:.1f}%`\n"
         f"• **Métrique parente :** `{chosen_indicator.get('metric_id', '')} - {chosen_indicator.get('metric_name', '')}`"
+        if not is_en else
+        f"📚 **Bibliometric Indicator [{ind_id}] :** {ind_name}\n\n"
+        f"• **Type :** `BIBLIOMETRIC (CONSULTATION ONLY)`\n"
+        f"• **SDG {chosen_sdg_num} Weight :** `{chosen_indicator.get('weight_sdg', 0.0) * 100:.1f}%`\n"
+        f"• **Parent Metric :** `{chosen_indicator.get('metric_id', '')} - {chosen_indicator.get('metric_name', '')}`"
     )
-    st.markdown("#### ℹ️ Procédure Officielle THE pour les Indicateurs Bibliométriques")
-    st.markdown(
-        "Times Higher Education extrait les métriques bibliométriques **directement depuis la base de données Scopus (Elsevier)**.\n"
-        "- **Identifiant d'Affiliation Scopus Officiel UC3 :** `60071378` (Université Constantine 3 Salah Boubnider)\n"
-        "- **Période des publications :** 2019 à 2023 (fenêtre quinquennale de production scientifique)\n"
-        "- **Période des citations :** 2019 à 2024 / 2025 (fenêtre de citations)\n"
-        "- **Action requise :** Aucune soumission de preuve manuelle requise sur le portail THE. "
-        "L'équipe UC3 doit auditer son profil d'affiliation Scopus et s'assurer que toutes les publications des facultés sont correctement rattachées à l'ID 60071378."
-    )
-    st.subheader("2️⃣ Suivi Interne & Veille Scientifique UC3")
-    b_col1, b_col2 = st.columns(2)
-    with b_col1:
-        target_papers = st.number_input("Cible interne de publications UC3 pour cet ODD :", min_value=0, value=25, step=5, key=f"bib_target_{ind_id}")
-        scopus_observed = st.number_input("Nombre de publications indexées observées (Scopus / SciVal) :", min_value=0, value=28, step=1, key=f"bib_obs_{ind_id}")
-    with b_col2:
-        top_labs = st.text_input("Facultés / Laboratoires moteurs à l'UC3 :", value="Faculté Génie des Procédés, Laboratoire de Biotechnologie, Faculté de Médecine", key=f"bib_labs_{ind_id}")
-        biblio_status = st.selectbox(
-            "Statut du profil d'affiliation Scopus :",
-            ["🟢 Affiliation ID 60071378 Validée & Conforme", "🟡 Demande de fusion/correction d'affiliation en cours", "🔵 En attente d'actualisation Scopus"],
-            key=f"bib_stat_{ind_id}"
-        )
 
-    delta_papers = scopus_observed - target_papers
-    pct_target = (scopus_observed / target_papers * 100) if target_papers > 0 else 100.0
-    st.metric("Taux d'Atteinte de la Cible Scientifique", f"{pct_target:.1f} %", delta=f"{delta_papers:+d} publications vs cible")
-    st.success(f"✅ Suivi bibliométrique de l'ODD {chosen_sdg_num} consigné dans la veille institutionnelle UC3.")
+    st.markdown("#### ℹ️ Procédure & Méthodologie Officielle THE (Elsevier / Scopus)" if not is_en else "#### ℹ️ Official THE Methodology & Procedure (Elsevier / Scopus)")
+    st.markdown(
+        "- **Fournisseur officiel des métriques :** Base de données Scopus (Elsevier) — extraction directe et automatisée par Times Higher Education.\n"
+        "- **Identifiant d'Affiliation Scopus Officiel UC3 :** `60071378` (*Université Constantine 3 Salah Boubnider*).\n"
+        "- **Période des publications indexées :** 2019 à 2023 (fenêtre quinquennale de production scientifique).\n"
+        "- **Période de comptabilisation des citations :** 2019 à 2024 / 2025 (fenêtre d'impact des citations).\n"
+        "- **Règle Zéro-Hallucination & Données Absentes :** Conformément au protocole officiel THE, les métriques bibliométriques "
+        "sont collectées et normalisées directement par THE. Une valeur non renseignée dans cette interface ne doit **jamais** "
+        "être traitée comme un zéro ni comme une preuve manquante à fournir par l'Université Constantine 3.\n"
+        "- **Saisie & Preuves Masquées :** Les champs de saisie, le dépôt de fichier justificatif, la zone de texte et le bouton "
+        "d'évaluation IA sont strictement désactivés et masqués pour cet indicateur."
+        if not is_en else
+        "- **Official Data Provider:** Scopus database (Elsevier) — direct automated extraction by Times Higher Education.\n"
+        "- **Official UC3 Scopus Affiliation ID:** `60071378` (*Salah Boubnider Constantine 3 University*).\n"
+        "- **Indexed Publication Window:** 2019 to 2023 (5-year scientific production window).\n"
+        "- **Citation Impact Window:** 2019 to 2024 / 2025 (citation window).\n"
+        "- **Zero-Hallucination & Absent Data Rule:** Under official THE protocol, bibliometric metrics are harvested "
+        "and normalized directly by THE. A value not entered in this interface must **never** be treated as zero nor as missing "
+        "evidence to be supplied by Constantine 3 University.\n"
+        "- **Inputs & Evidence Hidden:** Input fields, document upload, text paste, and the AI evaluation button are strictly "
+        "hidden and disabled for this indicator."
+    )
     st.stop()
 
 elif ind_type in ("external_metric", "exploratory"):
