@@ -1,0 +1,358 @@
+{
+  "edition": "2027",
+  "version": "1.0",
+  "mandatory_sdg": 17,
+  "scoring_rules": {
+    "overall_composition": {
+      "sdg_17_weight": 0.22,
+      "top_3_sdgs_weight": 0.26,
+      "total_score_years": [2026, 2027]
+    },
+    "evidence_evaluation": {
+      "specific": 1.0,
+      "general": 0.5,
+      "not_relevant": 0.0
+    },
+    "evidence_visibility": {
+      "public_url": 1.0,
+      "attached_document": 0.0
+    },
+    "policy_review_bonus": {
+      "reviewed_2022_2026": 1.0
+    },
+    "llm_validation_constraints": [
+      "Evidence must be self-contained. The reviewer (AI or human) does not click on links or explore additional pages.",
+      "Documents or web pages containing multiple links (link hubs) are rejected.",
+      "A statement of participation accompanied only by a link to a third-party platform does not constitute evidence.",
+      "Any attached document submitted as supporting evidence will be scored as not public.",
+      "Where evidence refers to only part of a document, the relevant section/page must be indicated in Comments.",
+      "Only 1 piece of direct evidence per indicator is evaluated."
+    ],
+    "target_academic_year": 2025,
+    "target_calendar_year": 2025
+  },
+  "sdgs": {
+    "1": {
+      "name": "SDG 1: No Poverty",
+      "short_name": "No Poverty",
+      "metrics": {
+        "1.1": {
+          "name": "Research on poverty",
+          "weight_sdg": 0.27,
+          "indicators": {
+            "1.1.1": {"name": "Papers co-authored with low or lower-middle income countries", "type": "bibliometric", "weight_sdg": 0.07},
+            "1.1.2": {"name": "No poverty: FWCI", "type": "bibliometric", "weight_sdg": 0.10},
+            "1.1.3": {"name": "No poverty: publications", "type": "bibliometric", "weight_sdg": 0.10}
+          }
+        },
+        "1.2": {
+          "name": "Proportion of students receiving financial aid to attend university because of poverty",
+          "weight_sdg": 0.27,
+          "indicators": {
+            "1.2.1": {"name": "Low income students receiving financial aid", "type": "quantitative", "weight_sdg": 0.27, "fields": ["Number of students", "Number of low income students receiving financial aid"], "year": 2025}
+          }
+        },
+        "1.3": {
+          "name": "University anti-poverty programmes",
+          "weight_sdg": 0.23,
+          "indicators": {
+            "1.3.1": {"name": "Bottom financial quintile admission target", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025},
+            "1.3.2": {"name": "Bottom financial quintile student success", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025},
+            "1.3.3": {"name": "Low-income student support", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025},
+            "1.3.4": {"name": "Bottom financial quintile student support", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025},
+            "1.3.5": {"name": "Low or lower-middle income countries student support", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}
+          }
+        },
+        "1.4": {
+          "name": "Community anti-poverty programmes",
+          "weight_sdg": 0.23,
+          "indicators": {
+            "1.4.1": {"name": "Local start-up assistance", "type": "qualitative", "weight_sdg": 0.0575, "max_points": 3, "year": 2025},
+            "1.4.2": {"name": "Local start-up financial assistance", "type": "qualitative", "weight_sdg": 0.0575, "max_points": 3, "year": 2025},
+            "1.4.3": {"name": "Programmes for services access", "type": "qualitative", "weight_sdg": 0.0575, "max_points": 3, "year": 2025},
+            "1.4.4": {"name": "Policy addressing poverty", "type": "qualitative", "weight_sdg": 0.0575, "max_points": 3, "year": 2025}
+          }
+        }
+      }
+    },
+    "2": {
+      "name": "SDG 2: Zero Hunger",
+      "short_name": "Zero Hunger",
+      "metrics": {
+        "2.1": {"name": "Research on hunger", "weight_sdg": 0.27, "indicators": {"2.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "2.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "2.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "2.2": {"name": "Campus food waste", "weight_sdg": 0.154, "indicators": {"2.2.1": {"name": "Campus food waste tracking", "type": "qualitative", "weight_sdg": 0.077, "max_points": 3, "year": 2025}, "2.2.2": {"name": "Campus food waste volume", "type": "quantitative", "weight_sdg": 0.077, "fields": ["Total food waste", "Campus population"], "year": 2025}}},
+        "2.3": {"name": "Student hunger", "weight_sdg": 0.192, "indicators": {"2.3.1": {"name": "Student food insecurity and hunger", "type": "qualitative", "weight_sdg": 0.048, "max_points": 3, "year": 2025}, "2.3.2": {"name": "Students hunger interventions", "type": "qualitative", "weight_sdg": 0.024, "max_points": 3, "year": 2025}, "2.3.3": {"name": "Sustainable food choices on campus", "type": "qualitative", "weight_sdg": 0.048, "max_points": 3, "year": 2025}, "2.3.4": {"name": "Healthy and affordable food choices", "type": "qualitative", "weight_sdg": 0.048, "max_points": 3, "year": 2025}, "2.3.5": {"name": "Staff hunger interventions", "type": "qualitative", "weight_sdg": 0.024, "max_points": 3, "year": 2025}}},
+        "2.4": {"name": "Proportion of graduates in agriculture and aquaculture including sustainability aspects", "weight_sdg": 0.192, "indicators": {"2.4.1": {"name": "Proportion of graduates in agriculture and aquaculture", "type": "quantitative", "weight_sdg": 0.192, "fields": ["Number of graduates", "Number of graduates from agriculture and aquaculture courses including sustainability aspects"], "year": 2025}}},
+        "2.5": {"name": "National hunger", "weight_sdg": 0.192, "indicators": {"2.5.1": {"name": "Access to food security knowledge", "type": "qualitative", "weight_sdg": 0.048, "max_points": 3, "year": 2025}, "2.5.2": {"name": "Events for local farmers and food producers", "type": "qualitative", "weight_sdg": 0.048, "max_points": 3, "year": 2025}, "2.5.3": {"name": "University access to local farmers and food producers", "type": "qualitative", "weight_sdg": 0.048, "max_points": 3, "year": 2025}, "2.5.4": {"name": "Sustainable food purchases", "type": "qualitative", "weight_sdg": 0.048, "max_points": 3, "year": 2025}}}
+      }
+    },
+    "3": {
+      "name": "SDG 3: Good Health and Well-being",
+      "short_name": "Good Health",
+      "metrics": {
+        "3.1": {"name": "Research on health and well-being", "weight_sdg": 0.27, "indicators": {"3.1.1": {"name": "Paper views", "type": "bibliometric", "weight_sdg": 0.10}, "3.1.2": {"name": "Clinical citations", "type": "bibliometric", "weight_sdg": 0.10}, "3.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "3.2": {"name": "Number graduating in health professions", "weight_sdg": 0.346, "indicators": {"3.2.1": {"name": "Proportion of graduates in health professions", "type": "quantitative", "weight_sdg": 0.346, "fields": ["Number of graduates", "Number of graduates in health professions"], "year": 2025}}},
+        "3.3": {"name": "Collaborations and health services", "weight_sdg": 0.384, "indicators": {"3.3.1": {"name": "Current collaborations with health institutions", "type": "qualitative", "weight_sdg": 0.07, "max_points": 3, "year": 2025}, "3.3.2": {"name": "Health outreach programmes", "type": "qualitative", "weight_sdg": 0.07, "max_points": 3, "year": 2025}, "3.3.3": {"name": "Shared sports facilities", "type": "qualitative", "weight_sdg": 0.024, "max_points": 3, "year": 2025}, "3.3.4": {"name": "Sexual and reproductive health care services for students", "type": "qualitative", "weight_sdg": 0.07, "max_points": 3, "year": 2025}, "3.3.5": {"name": "Mental health support for students", "type": "qualitative", "weight_sdg": 0.035, "max_points": 3, "year": 2025}, "3.3.6": {"name": "Smoke-free policy", "type": "qualitative", "weight_sdg": 0.08, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "3.3.7": {"name": "Mental health support for staff", "type": "qualitative", "weight_sdg": 0.035, "max_points": 3, "year": 2025}}}
+      }
+    },
+    "4": {
+      "name": "SDG 4: Quality Education",
+      "short_name": "Quality Education",
+      "metrics": {
+        "4.1": {"name": "Research on early years and lifelong learning", "weight_sdg": 0.27, "indicators": {"4.1.1": {"name": "Paper views", "type": "bibliometric", "weight_sdg": 0.10}, "4.1.2": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "4.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "4.2": {"name": "Proportion of graduates with teaching qualification", "weight_sdg": 0.154, "indicators": {"4.2.1": {"name": "Proportion of graduates with relevant qualification for teaching", "type": "quantitative", "weight_sdg": 0.154, "fields": ["Number of graduates", "Number of graduates who gained a qualification that entitled them to teach at primary school level"], "year": 2025}}},
+        "4.3": {"name": "Lifelong learning measures", "weight_sdg": 0.268, "indicators": {"4.3.1": {"name": "Public resources (lifelong learning)", "type": "qualitative", "weight_sdg": 0.05, "max_points": 3, "year": 2025}, "4.3.2": {"name": "Public events (lifelong learning)", "type": "qualitative", "weight_sdg": 0.05, "max_points": 3, "year": 2025}, "4.3.3": {"name": "Vocational training events (lifelong learning)", "type": "qualitative", "weight_sdg": 0.05, "max_points": 3, "year": 2025}, "4.3.4": {"name": "Education outreach activities beyond campus", "type": "qualitative", "weight_sdg": 0.05, "max_points": 3, "year": 2025}, "4.3.5": {"name": "Lifelong learning access policy", "type": "qualitative", "weight_sdg": 0.068, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}}},
+        "4.4": {"name": "Proportion of first-generation students", "weight_sdg": 0.308, "indicators": {"4.4.1": {"name": "Proportion of first-generation students", "type": "quantitative", "weight_sdg": 0.308, "fields": ["Number of students starting a degree", "Number of first-generation students starting a degree"], "year": 2025}}}
+      }
+    },
+    "5": {
+      "name": "SDG 5: Gender Equality",
+      "short_name": "Gender Equality",
+      "metrics": {
+        "5.1": {"name": "Research on gender equality", "weight_sdg": 0.27, "indicators": {"5.1.1": {"name": "Proportion of female authors", "type": "bibliometric", "weight_sdg": 0.10}, "5.1.2": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "5.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "5.2": {"name": "Proportion of first-generation female students", "weight_sdg": 0.154, "indicators": {"5.2.1": {"name": "Proportion of women first-generation", "type": "quantitative", "weight_sdg": 0.154, "fields": ["Number of women starting a degree", "Number of first-generation women starting a degree"], "year": 2025}}},
+        "5.3": {"name": "Student access measures", "weight_sdg": 0.154, "indicators": {"5.3.1": {"name": "Tracking access measures", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025}, "5.3.2": {"name": "Policy for women applications and entry", "type": "qualitative", "weight_sdg": 0.046, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "5.3.3": {"name": "Women's access schemes", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "5.3.4": {"name": "Women's application in underrepresented subjects", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}}},
+        "5.4": {"name": "Proportion of senior female academics", "weight_sdg": 0.154, "indicators": {"5.4.1": {"name": "Proportion of senior female academics", "type": "quantitative", "weight_sdg": 0.154, "fields": ["Number of senior academic staff", "Number of female senior academic staff"], "year": 2025}}},
+        "5.5": {"name": "Proportion of women receiving degrees", "weight_sdg": 0.115, "indicators": {"5.5.1": {"name": "Proportion of female degrees awarded", "type": "quantitative", "weight_sdg": 0.115, "fields": ["Number of graduates: Total", "Number of female graduates: Total"], "year": 2025}}},
+        "5.6": {"name": "Women's progress measures", "weight_sdg": 0.153, "indicators": {"5.6.1": {"name": "Policy of non-discrimination against women", "type": "qualitative", "weight_sdg": 0.0195, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "5.6.2": {"name": "Non-discrimination policies for transgender", "type": "qualitative", "weight_sdg": 0.0195, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "5.6.3": {"name": "Maternity policy", "type": "qualitative", "weight_sdg": 0.0095, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "5.6.4": {"name": "Childcare facilities for students", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "5.6.5": {"name": "Childcare facilities for staff and faculty", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "5.6.6": {"name": "Women's mentoring schemes", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "5.6.7": {"name": "Track women's graduation rate", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "5.6.8": {"name": "Policies protecting those reporting discrimination", "type": "qualitative", "weight_sdg": 0.019, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "5.6.9": {"name": "Paternity policy", "type": "qualitative", "weight_sdg": 0.0095, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}}}
+      }
+    },
+    "6": {
+      "name": "SDG 6: Clean Water and Sanitation",
+      "short_name": "Clean Water",
+      "metrics": {
+        "6.1": {"name": "Research on water", "weight_sdg": 0.27, "indicators": {"6.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "6.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "6.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "6.2": {"name": "Water consumption per person", "weight_sdg": 0.19, "indicators": {"6.2.1": {"name": "Water consumption tracking", "type": "qualitative", "weight_sdg": 0.095, "max_points": 3, "year": 2025}, "6.2.2": {"name": "Water consumption per person volume", "type": "quantitative", "weight_sdg": 0.095, "fields": ["Volume of water used", "Campus population"], "year": 2025}}},
+        "6.3": {"name": "Water usage and care", "weight_sdg": 0.23, "indicators": {"6.3.1": {"name": "Wastewater treatment", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "6.3.2": {"name": "Preventing water system pollution", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "6.3.3": {"name": "Free drinking water provided", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "6.3.4": {"name": "Water-conscious building standards", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "6.3.5": {"name": "Water-conscious planting", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}}},
+        "6.4": {"name": "Water reuse", "weight_sdg": 0.12, "indicators": {"6.4.1": {"name": "Water reuse policy", "type": "qualitative", "weight_sdg": 0.06, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "6.4.2": {"name": "Water reuse measurement", "type": "qualitative", "weight_sdg": 0.06, "max_points": 3, "year": 2025}}},
+        "6.5": {"name": "Water in the community", "weight_sdg": 0.19, "indicators": {"6.5.1": {"name": "Water management educational opportunities", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "6.5.3": {"name": "Off-campus water conservation support", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "6.5.4": {"name": "Sustainable water extraction on campus", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "6.5.5": {"name": "Cooperation on water security", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "6.5.6": {"name": "Promoting conscious water usage on campus", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "6.5.7": {"name": "Promoting conscious water usage in the wider community", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}}}
+      }
+    },
+    "7": {
+      "name": "SDG 7: Affordable and Clean Energy",
+      "short_name": "Clean Energy",
+      "metrics": {
+        "7.1": {"name": "Research on clean energy", "weight_sdg": 0.27, "indicators": {"7.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "7.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "7.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "7.2": {"name": "University measures towards affordable and clean energy", "weight_sdg": 0.23, "indicators": {"7.2.1": {"name": "Energy-efficient renovation and building", "type": "qualitative", "weight_sdg": 0.0385, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "7.2.2": {"name": "Upgrade buildings to higher energy efficiency", "type": "qualitative", "weight_sdg": 0.0385, "max_points": 3, "year": 2025}, "7.2.3": {"name": "Carbon reduction and emission reduction process", "type": "qualitative", "weight_sdg": 0.0385, "max_points": 3, "year": 2025}, "7.2.4": {"name": "Plan to reduce energy consumption", "type": "qualitative", "weight_sdg": 0.0385, "max_points": 3, "year": 2025}, "7.2.5": {"name": "Energy wastage identification", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "7.2.6": {"name": "Divestment policy", "type": "qualitative", "weight_sdg": 0.038, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}}},
+        "7.3": {"name": "Energy use density", "weight_sdg": 0.17, "indicators": {"7.3.1": {"name": "Energy usage per sqm", "type": "quantitative", "weight_sdg": 0.17, "fields": ["Total energy used", "University floor space"], "year": 2025}}},
+        "7.4": {"name": "Energy and the community", "weight_sdg": 0.23, "indicators": {"7.4.1": {"name": "Local community outreach for energy efficiency", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "7.4.2": {"name": "100% renewable energy pledge", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "7.4.3": {"name": "Energy efficiency services for industry", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "7.4.4": {"name": "Policy development for clean energy technology", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "7.4.5": {"name": "Assistance to low-carbon innovation", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}}},
+        "7.5": {"name": "Low-carbon energy use", "weight_sdg": 0.10, "indicators": {"7.5.1": {"name": "Low-carbon energy use", "type": "quantitative", "weight_sdg": 0.10, "fields": ["Total energy used", "Total energy used from low-carbon sources"], "year": 2025}}}
+      }
+    },
+    "8": {
+      "name": "SDG 8: Decent Work and Economic Growth",
+      "short_name": "Decent Work",
+      "metrics": {
+        "8.1": {"name": "Research on economic growth and employment", "weight_sdg": 0.27, "indicators": {"8.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.14}, "8.1.2": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.13}}},
+        "8.2": {"name": "Employment practice", "weight_sdg": 0.196, "indicators": {"8.2.1": {"name": "Employment practice living wage", "type": "qualitative", "weight_sdg": 0.0245, "max_points": 3, "year": 2025}, "8.2.2": {"name": "Employment practice unions", "type": "qualitative", "weight_sdg": 0.0122, "max_points": 3, "year": 2025}, "8.2.3": {"name": "Employment policy on discrimination", "type": "qualitative", "weight_sdg": 0.0245, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "8.2.4": {"name": "Employment policy modern slavery", "type": "qualitative", "weight_sdg": 0.0245, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "8.2.5": {"name": "Employment practice equivalent rights outsourcing", "type": "qualitative", "weight_sdg": 0.0245, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "8.2.6": {"name": "Employment policy pay scale equity", "type": "qualitative", "weight_sdg": 0.0245, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "8.2.7": {"name": "Tracking pay scale for gender equity", "type": "qualitative", "weight_sdg": 0.0245, "max_points": 3, "year": 2025}, "8.2.8": {"name": "Employment practice appeal process", "type": "qualitative", "weight_sdg": 0.0245, "max_points": 3, "year": 2025}, "8.2.9": {"name": "Employment practice labour rights", "type": "qualitative", "weight_sdg": 0.0122, "max_points": 3, "year": 2025}}},
+        "8.3": {"name": "Expenditure per employee", "weight_sdg": 0.154, "indicators": {"8.3.1": {"name": "Expenditure per employee", "type": "quantitative", "weight_sdg": 0.154, "fields": ["Number of employees", "University expenditure"], "year": 2025}}},
+        "8.4": {"name": "Proportion of students taking work placements", "weight_sdg": 0.19, "indicators": {"8.4.1": {"name": "Proportion of students with work placements", "type": "quantitative", "weight_sdg": 0.19, "fields": ["Number of students", "Number of students with work placements for more than a month"], "year": 2025}}},
+        "8.5": {"name": "Proportion of employees on secure contracts", "weight_sdg": 0.19, "indicators": {"8.5.1": {"name": "Proportion of employees on secure contracts", "type": "quantitative", "weight_sdg": 0.19, "fields": ["Number of employees", "Number of employees on contracts of over 24 months"], "year": 2025}}}
+      }
+    },
+    "9": {
+      "name": "SDG 9: Industry, Innovation and Infrastructure",
+      "short_name": "Industry & Innovation",
+      "metrics": {
+        "9.1": {"name": "Research on industry, innovation and infrastructure", "weight_sdg": 0.116, "indicators": {"9.1.1": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.116}}},
+        "9.2": {"name": "Patents citing university research", "weight_sdg": 0.154, "indicators": {"9.2.1": {"name": "Number of patents citing research", "type": "external_metric", "weight_sdg": 0.154}}},
+        "9.3": {"name": "University spin offs", "weight_sdg": 0.346, "indicators": {"9.3.1": {"name": "Number of university spin offs", "type": "quantitative", "weight_sdg": 0.346, "fields": ["Number of university spin-offs"], "year": 2025}}},
+        "9.4": {"name": "Research income from industry and commerce", "weight_sdg": 0.384, "indicators": {"9.4.1": {"name": "Research income per academic staff", "type": "quantitative", "weight_sdg": 0.384, "fields": ["Research income from industry and commerce by subject area", "Number of academic staff by subject area"], "year": 2025}}}
+      }
+    },
+    "10": {
+      "name": "SDG 10: Reduced Inequalities",
+      "short_name": "Reduced Inequalities",
+      "metrics": {
+        "10.1": {"name": "Research on reduced inequalities", "weight_sdg": 0.27, "indicators": {"10.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "10.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "10.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "10.2": {"name": "First-generation students", "weight_sdg": 0.155, "indicators": {"10.2.1": {"name": "Proportion of first-generation students", "type": "quantitative", "weight_sdg": 0.155, "fields": ["Number of students starting a degree", "Number of first-generation students starting a degree"], "year": 2025}}},
+        "10.3": {"name": "International students from developing countries", "weight_sdg": 0.155, "indicators": {"10.3.1": {"name": "Proportion of international students from developing countries", "type": "quantitative", "weight_sdg": 0.155, "fields": ["Number of students", "Number of international students from developing countries"], "year": 2025}}},
+        "10.4": {"name": "Proportion of students with disabilities", "weight_sdg": 0.115, "indicators": {"10.4.1": {"name": "Proportion of students with disabilities", "type": "quantitative", "weight_sdg": 0.115, "fields": ["Number of students", "Number of students with disability"], "year": 2025}}},
+        "10.5": {"name": "Proportion of employees with disabilities", "weight_sdg": 0.115, "indicators": {"10.5.1": {"name": "Proportion of employees with disabilities", "type": "quantitative", "weight_sdg": 0.115, "fields": ["Number of employees", "Number of employees with disability"], "year": 2025}}},
+        "10.6": {"name": "Measures against discrimination", "weight_sdg": 0.19, "indicators": {"10.6.1": {"name": "Non-discriminatory admissions policy", "type": "qualitative", "weight_sdg": 0.019, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "10.6.2": {"name": "Access to university track underrepresented groups applications", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.3": {"name": "Access to university underrepresented groups recruit", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.4": {"name": "Anti-discrimination policy", "type": "qualitative", "weight_sdg": 0.0095, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "10.6.5": {"name": "University diversity officer", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.6": {"name": "Support for underrepresented groups", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.7": {"name": "Accessible facilities", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.8": {"name": "Disability support services", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.9": {"name": "Disability access scheme", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.10": {"name": "Disability accommodation policy", "type": "qualitative", "weight_sdg": 0.019, "max_points": 3, "year": 2025}, "10.6.11": {"name": "Anti-harassment policy", "type": "qualitative", "weight_sdg": 0.0095, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}}}
+      }
+    },
+    "11": {
+      "name": "SDG 11: Sustainable Cities and Communities",
+      "short_name": "Sustainable Cities",
+      "metrics": {
+        "11.1": {"name": "Research on sustainable cities", "weight_sdg": 0.27, "indicators": {"11.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "11.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "11.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "11.2": {"name": "Support of arts and heritage", "weight_sdg": 0.226, "indicators": {"11.2.1": {"name": "Public access to buildings", "type": "qualitative", "weight_sdg": 0.0375, "max_points": 3, "year": 2025}, "11.2.2": {"name": "Public access to libraries", "type": "qualitative", "weight_sdg": 0.0375, "max_points": 3, "year": 2025}, "11.2.3": {"name": "Public access to museums", "type": "qualitative", "weight_sdg": 0.0375, "max_points": 3, "year": 2025}, "11.2.4": {"name": "Public access to green spaces", "type": "qualitative", "weight_sdg": 0.0375, "max_points": 3, "year": 2025}, "11.2.5": {"name": "Arts and heritage contribution", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "11.2.6": {"name": "Record and preserve cultural heritage", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}}},
+        "11.3": {"name": "Expenditure on arts and heritage", "weight_sdg": 0.153, "indicators": {"11.3.1": {"name": "Arts and heritage expenditure", "type": "quantitative", "weight_sdg": 0.153, "fields": ["University expenditure", "University expenditure on arts and heritage"], "year": 2025}}},
+        "11.4": {"name": "Sustainable practices", "weight_sdg": 0.351, "indicators": {"11.4.1": {"name": "Sustainable practices targets", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.2": {"name": "Promote sustainable commuting", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.3": {"name": "Allow remote working", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.4": {"name": "Affordable housing for employees", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.5": {"name": "Affordable housing for students", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.6": {"name": "Pedestrian priority on campus", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.7": {"name": "Local authority collaboration regarding planning and development", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.8": {"name": "Planning development - new build standards", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}, "11.4.9": {"name": "Building on brownfield sites", "type": "qualitative", "weight_sdg": 0.039, "max_points": 3, "year": 2025}}}
+      }
+    },
+    "12": {
+      "name": "SDG 12: Responsible Consumption and Production",
+      "short_name": "Responsible Consumption",
+      "metrics": {
+        "12.1": {"name": "Research on responsible consumption", "weight_sdg": 0.27, "indicators": {"12.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "12.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "12.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "12.2": {"name": "Operational measures", "weight_sdg": 0.267, "indicators": {"12.2.1": {"name": "Ethical sourcing policy", "type": "qualitative", "weight_sdg": 0.048, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "12.2.3": {"name": "Policy waste disposal - hazardous materials", "type": "qualitative", "weight_sdg": 0.048, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "12.2.4": {"name": "Policy waste disposal - landfill policy", "type": "qualitative", "weight_sdg": 0.048, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "12.2.5": {"name": "Policy for minimisation of plastic use", "type": "qualitative", "weight_sdg": 0.048, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "12.2.6": {"name": "Policy for minimisation of disposable items", "type": "qualitative", "weight_sdg": 0.048, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "12.2.7": {"name": "Disposable policy: extensions to services", "type": "qualitative", "weight_sdg": 0.0135, "max_points": 3, "year": 2025}, "12.2.8": {"name": "Minimisation policies extended to suppliers", "type": "qualitative", "weight_sdg": 0.0135, "max_points": 3, "year": 2025}}},
+        "12.3": {"name": "Proportion of recycled waste", "weight_sdg": 0.27, "indicators": {"12.3.1": {"name": "Waste tracking", "type": "qualitative", "weight_sdg": 0.135, "max_points": 3, "year": 2025}, "12.3.2": {"name": "Proportion of waste recycled", "type": "quantitative", "weight_sdg": 0.135, "fields": ["Amount of waste generated", "Amount of waste recycled", "Amount of waste sent to landfill"], "year": 2025}}},
+        "12.4": {"name": "Publication of a sustainability report", "weight_sdg": 0.193, "indicators": {"12.4.1": {"name": "Publication of a sustainability report", "type": "qualitative", "weight_sdg": 0.193, "max_points": 3, "year": 2025}}}
+      }
+    },
+    "13": {
+      "name": "SDG 13: Climate Action",
+      "short_name": "Climate Action",
+      "metrics": {
+        "13.1": {"name": "Research on climate action", "weight_sdg": 0.27, "indicators": {"13.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "13.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "13.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "13.2": {"name": "Low-carbon energy use", "weight_sdg": 0.27, "indicators": {"13.2.1": {"name": "Low-carbon energy tracking", "type": "qualitative", "weight_sdg": 0.135, "max_points": 3, "year": 2025}, "13.2.2": {"name": "Low-carbon energy use volume", "type": "quantitative", "weight_sdg": 0.135, "fields": ["Total energy used", "Total energy used from low-carbon sources"], "year": 2025}}},
+        "13.3": {"name": "Environmental education measures", "weight_sdg": 0.23, "indicators": {"13.3.1": {"name": "Local education programmes on climate", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "13.3.2": {"name": "Climate Action Plan, shared", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "13.3.3": {"name": "Co-operative planning for climate change disasters", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "13.3.4": {"name": "Inform and support government", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "13.3.5": {"name": "Environmental education collaborate with NGO", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}}},
+        "13.4": {"name": "Commitment to carbon neutral university", "weight_sdg": 0.23, "indicators": {"13.4.1": {"name": "Commitment to carbon neutral university", "type": "qualitative", "weight_sdg": 0.115, "max_points": 5, "year": 2025}, "13.4.2": {"name": "Achieve by date", "type": "qualitative", "weight_sdg": 0.115, "max_points": 4, "year": 2025}}}
+      }
+    },
+    "14": {
+      "name": "SDG 14: Life Below Water",
+      "short_name": "Life Below Water",
+      "metrics": {
+        "14.1": {"name": "Research on life below water", "weight_sdg": 0.27, "indicators": {"14.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "14.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "14.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "14.2": {"name": "Supporting aquatic ecosystems through education", "weight_sdg": 0.153, "indicators": {"14.2.1": {"name": "Fresh-water ecosystems (community outreach)", "type": "qualitative", "weight_sdg": 0.051, "max_points": 3, "year": 2025}, "14.2.2": {"name": "Sustainable fisheries (community outreach)", "type": "qualitative", "weight_sdg": 0.051, "max_points": 3, "year": 2025}, "14.2.3": {"name": "Overfishing (community outreach)", "type": "qualitative", "weight_sdg": 0.051, "max_points": 3, "year": 2025}}},
+        "14.3": {"name": "Supporting aquatic ecosystems through action", "weight_sdg": 0.194, "indicators": {"14.3.1": {"name": "Conservation and sustainable utilisation of the oceans (events)", "type": "qualitative", "weight_sdg": 0.0485, "max_points": 3, "year": 2025}, "14.3.2": {"name": "Food from aquatic ecosystems (policies)", "type": "qualitative", "weight_sdg": 0.0485, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "14.3.3": {"name": "Maintain ecosystems and their biodiversity (direct work)", "type": "qualitative", "weight_sdg": 0.0485, "max_points": 3, "year": 2025}, "14.3.4": {"name": "Technologies towards aquatic ecosystem damage prevention (direct work)", "type": "qualitative", "weight_sdg": 0.0485, "max_points": 3, "year": 2025}}},
+        "14.4": {"name": "Water sensitive waste disposal", "weight_sdg": 0.193, "indicators": {"14.4.1": {"name": "Water discharge guidelines and standards", "type": "qualitative", "weight_sdg": 0.0645, "max_points": 3, "year": 2025}, "14.4.2": {"name": "Action plan to reducing plastic waste", "type": "qualitative", "weight_sdg": 0.0645, "max_points": 3, "year": 2025}, "14.4.3": {"name": "Reducing marine pollution (policy)", "type": "qualitative", "weight_sdg": 0.064, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}}},
+        "14.5": {"name": "Maintaining a local ecosystem", "weight_sdg": 0.19, "indicators": {"14.5.1": {"name": "Minimizing alteration of aquatic ecosystems (plan)", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "14.5.2": {"name": "Monitoring the health of aquatic ecosystems", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "14.5.3": {"name": "Programmes towards good aquatic stewardship practices", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "14.5.4": {"name": "Collaboration for shared aquatic ecosystems", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}, "14.5.5": {"name": "Watershed management strategy", "type": "qualitative", "weight_sdg": 0.038, "max_points": 3, "year": 2025}}}
+      }
+    },
+    "15": {
+      "name": "SDG 15: Life On Land",
+      "short_name": "Life On Land",
+      "metrics": {
+        "15.1": {"name": "Research on land ecosystems", "weight_sdg": 0.27, "indicators": {"15.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "15.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "15.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "15.2": {"name": "Supporting land ecosystems through education", "weight_sdg": 0.23, "indicators": {"15.2.1": {"name": "Events about sustainable use of land", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "15.2.2": {"name": "Sustainably farmed food on campus", "type": "qualitative", "weight_sdg": 0.046, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "15.2.3": {"name": "Maintain and extend current ecosystems' biodiversity", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "15.2.4": {"name": "Educational programmes on ecosystems", "type": "qualitative", "weight_sdg": 0.046, "max_points": 3, "year": 2025}, "15.2.5": {"name": "Sustainable management of land for agriculture", "type": "qualitative", "weight_sdg": 0.023, "max_points": 3, "year": 2025}, "15.2.6": {"name": "Sustainable management of land for tourism", "type": "qualitative", "weight_sdg": 0.023, "max_points": 3, "year": 2025}}},
+        "15.3": {"name": "Supporting land ecosystems through action", "weight_sdg": 0.27, "indicators": {"15.3.1": {"name": "Sustainable use, conservation and restoration of land (policy)", "type": "qualitative", "weight_sdg": 0.054, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "15.3.2": {"name": "Monitoring IUCN and other conservation species (policies)", "type": "qualitative", "weight_sdg": 0.054, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "15.3.3": {"name": "Local biodiversity included in planning and development", "type": "qualitative", "weight_sdg": 0.054, "max_points": 3, "year": 2025}, "15.3.4": {"name": "Alien species impact reduction (policies)", "type": "qualitative", "weight_sdg": 0.054, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "15.3.5": {"name": "Collaboration for shared land ecosystems", "type": "qualitative", "weight_sdg": 0.054, "max_points": 3, "year": 2025}}},
+        "15.4": {"name": "Land sensitive waste disposal", "weight_sdg": 0.23, "indicators": {"15.4.1": {"name": "Water discharge guidelines and standards", "type": "qualitative", "weight_sdg": 0.077, "max_points": 3, "year": 2025}, "15.4.2": {"name": "Policy on plastic waste reduction", "type": "qualitative", "weight_sdg": 0.0765, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "15.4.3": {"name": "Policy on hazardous waste disposal", "type": "qualitative", "weight_sdg": 0.0765, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}}}
+      }
+    },
+    "16": {
+      "name": "SDG 16: Peace, Justice and Strong Institutions",
+      "short_name": "Peace & Justice",
+      "metrics": {
+        "16.1": {"name": "Research on peace and justice", "weight_sdg": 0.27, "indicators": {"16.1.1": {"name": "CiteScore", "type": "bibliometric", "weight_sdg": 0.10}, "16.1.2": {"name": "FWCI", "type": "bibliometric", "weight_sdg": 0.10}, "16.1.3": {"name": "Publications", "type": "bibliometric", "weight_sdg": 0.07}}},
+        "16.2": {"name": "University governance measures", "weight_sdg": 0.266, "indicators": {"16.2.1": {"name": "Elected representation", "type": "qualitative", "weight_sdg": 0.0335, "max_points": 3, "year": 2025}, "16.2.2": {"name": "Students' union", "type": "qualitative", "weight_sdg": 0.0335, "max_points": 3, "year": 2025}, "16.2.3": {"name": "Identify and engage with local stakeholders", "type": "qualitative", "weight_sdg": 0.0335, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "16.2.4": {"name": "Participatory bodies for stakeholder engagement", "type": "qualitative", "weight_sdg": 0.0335, "max_points": 3, "year": 2025}, "16.2.5": {"name": "University principles on corruption and bribery", "type": "qualitative", "weight_sdg": 0.0335, "max_points": 3, "year": 2025}, "16.2.6": {"name": "Academic freedom policy", "type": "qualitative", "weight_sdg": 0.066, "max_points": 4, "year": 2025, "reviewed_policy_bonus": true}, "16.2.7": {"name": "Publish financial data", "type": "qualitative", "weight_sdg": 0.0325, "max_points": 3, "year": 2025}}},
+        "16.3": {"name": "Working with government", "weight_sdg": 0.232, "indicators": {"16.3.1": {"name": "Provide expert advice to government", "type": "qualitative", "weight_sdg": 0.064, "max_points": 3, "year": 2025}, "16.3.2": {"name": "Policy- and lawmakers outreach and education", "type": "qualitative", "weight_sdg": 0.064, "max_points": 3, "year": 2025}, "16.3.3": {"name": "Participation in government research", "type": "qualitative", "weight_sdg": 0.064, "max_points": 3, "year": 2025}, "16.3.4": {"name": "Neutral platform to discuss issues", "type": "qualitative", "weight_sdg": 0.04, "max_points": 3, "year": 2025}}},
+        "16.4": {"name": "Proportion of graduates in law and civil enforcement", "weight_sdg": 0.232, "indicators": {"16.4.1": {"name": "Proportion of graduates in law", "type": "quantitative", "weight_sdg": 0.232, "fields": ["Number of graduates", "Number of graduates from law and enforcement related courses"], "year": 2025}}}
+      }
+    },
+    "17": {
+      "name": "SDG 17: Partnerships for the Goals",
+      "short_name": "Partnerships (Mandatory)",
+      "weight_overall": 0.22,
+      "metrics": {
+        "17.1": {
+          "name": "Research into partnership for the goals",
+          "weight_sdg": 0.271,
+          "indicators": {
+            "17.1.1": {"name": "Proportion of output co-authored with low or lower-middle income countries", "type": "bibliometric", "weight_sdg": 0.1355},
+            "17.1.2": {"name": "Partnerships for the goals: publications", "type": "bibliometric", "weight_sdg": 0.1355}
+          }
+        },
+        "17.2": {
+          "name": "Relationships to support the goals",
+          "weight_sdg": 0.185,
+          "indicators": {
+            "17.2.1": {
+              "name": "Relationships with regional NGOs and government for SDG policy",
+              "type": "qualitative",
+              "weight_sdg": 0.037,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Direct involvement in, or input into, national government or regional NGO SDG policy development."
+            },
+            "17.2.2": {
+              "name": "Cross sectoral dialogue about SDGs",
+              "type": "qualitative",
+              "weight_sdg": 0.037,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Initiate and participate in cross-sectoral dialogue about the SDGs, e.g. conferences involving government or NGOs."
+            },
+            "17.2.3": {
+              "name": "International collaboration data gathering for SDG",
+              "type": "qualitative",
+              "weight_sdg": 0.037,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Participate in international collaboration on gathering or measuring data for the SDGs."
+            },
+            "17.2.4": {
+              "name": "Collaboration for SDG best practice",
+              "type": "qualitative",
+              "weight_sdg": 0.037,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Through international collaboration and research, review comparative approaches and develop international best practice on tackling the SDGs."
+            },
+            "17.2.5": {
+              "name": "Collaboration with NGOs for SDGs",
+              "type": "qualitative",
+              "weight_sdg": 0.037,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Collaborate with NGOs to tackle the SDGs through: student volunteering programmes, research programmes, or development of educational resources."
+            }
+          }
+        },
+        "17.3": {
+          "name": "Publication of SDG reports",
+          "weight_sdg": 0.272,
+          "indicators": {
+            "17.3.1": {"name": "Publication of SDG reports - SDG 1 No Poverty", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.2": {"name": "Publication of SDG reports - SDG 2 Zero Hunger", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.3": {"name": "Publication of SDG reports - SDG 3 Good Health", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.4": {"name": "Publication of SDG reports - SDG 4 Quality Education", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.5": {"name": "Publication of SDG reports - SDG 5 Gender Equality", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.6": {"name": "Publication of SDG reports - SDG 6 Clean Water", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.7": {"name": "Publication of SDG reports - SDG 7 Clean Energy", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.8": {"name": "Publication of SDG reports - SDG 8 Decent Work", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.9": {"name": "Publication of SDG reports - SDG 9 Industry & Innovation", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.10": {"name": "Publication of SDG reports - SDG 10 Reduced Inequalities", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.11": {"name": "Publication of SDG reports - SDG 11 Sustainable Cities", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.12": {"name": "Publication of SDG reports - SDG 12 Responsible Consumption", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.13": {"name": "Publication of SDG reports - SDG 13 Climate Action", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.14": {"name": "Publication of SDG reports - SDG 14 Life Below Water", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.15": {"name": "Publication of SDG reports - SDG 15 Life On Land", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.16": {"name": "Publication of SDG reports - SDG 16 Peace & Justice", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025},
+            "17.3.17": {"name": "Publication of SDG reports - SDG 17 Partnerships", "type": "qualitative", "weight_sdg": 0.016, "max_points": 3, "year": 2025}
+          }
+        },
+        "17.4": {
+          "name": "Education for the SDGs",
+          "weight_sdg": 0.272,
+          "indicators": {
+            "17.4.1": {
+              "name": "Education for SDGs commitment to meaningful education",
+              "type": "qualitative",
+              "weight_sdg": 0.0906,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Commitment to meaningful education around the SDGs across the university, relevant and applicable to all students."
+            },
+            "17.4.2": {
+              "name": "Education for SDGs: specific courses on sustainability",
+              "type": "qualitative",
+              "weight_sdg": 0.0906,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Dedicated courses (full degrees, or electives) that address sustainability and the SDGs."
+            },
+            "17.4.3": {
+              "name": "Education for SDGs in the wider community",
+              "type": "qualitative",
+              "weight_sdg": 0.0906,
+              "max_points": 3,
+              "year": 2025,
+              "definition": "Dedicated outreach educational activities for the wider community (alumni, local residents, displaced people)."
+            },
+            "17.4.4": {
+              "name": "Sustainability Literacy",
+              "type": "exploratory",
+              "weight_sdg": 0.0,
+              "year": 2025,
+              "definition": "Evaluate students' ability to learn and retain key concepts of sustainability (e.g. Sulitest TASK)."
+            }
+          }
+        }
+      }
+    }
+  }
+}
