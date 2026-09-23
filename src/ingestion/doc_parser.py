@@ -11,18 +11,32 @@ from pypdf import PdfReader
 import docx
 
 class DocumentParser:
-    def __init__(self):
-        pass
+    def __init__(self, max_file_size_mb: float = 50.0):
+        self.max_file_size_mb = max_file_size_mb
 
     def parse_file(self, file_path: str | Path) -> Dict[str, Any]:
         path = Path(file_path)
         if not path.exists():
             raise FileNotFoundError(f"Fichier introuvable: {path}")
 
+        # Contrôle de sécurité de taille maximale
+        size_bytes = path.stat().st_size
+        size_mb = size_bytes / (1024 * 1024)
+        if size_mb > self.max_file_size_mb:
+            raise ValueError(
+                f"Taille de fichier excessive ({size_mb:.1f} Mo > {self.max_file_size_mb:.1f} Mo). "
+                f"Limite de sécurité institutionnelle dépassée pour prévenir les dénis de service."
+            )
+
         ext = path.suffix.lower()
-        if ext == ".pdf":
+        if ext == ".doc":
+            raise ValueError(
+                "Le format binaire hérité Word 97-2003 (.doc) n'est pas pris en charge directement. "
+                "Veuillez convertir le document en .docx (OpenXML) ou .pdf avant importation."
+            )
+        elif ext == ".pdf":
             return self.parse_pdf(path)
-        elif ext in (".docx", ".doc"):
+        elif ext == ".docx":
             return self.parse_docx(path)
         elif ext in (".xlsx", ".xls"):
             return self.parse_excel(path)
@@ -43,14 +57,18 @@ class DocumentParser:
             pages_content.append({"page_number": idx + 1, "text": text.strip()})
             full_text.append(text.strip())
 
+        joined_text = "\n\n".join(full_text).strip()
+        is_scanned = len(joined_text) < 30 and len(reader.pages) > 0
+
         return {
             "source_type": "PDF",
             "file_name": path.name,
             "file_path": str(path),
             "total_pages": len(reader.pages),
             "pages": pages_content,
-            "full_text": "\n\n".join(full_text),
-            "is_multipage": len(reader.pages) > 1
+            "full_text": joined_text,
+            "is_multipage": len(reader.pages) > 1,
+            "is_likely_scanned": is_scanned
         }
 
     def parse_docx(self, path: Path) -> Dict[str, Any]:

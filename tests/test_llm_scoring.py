@@ -330,3 +330,57 @@ def test_bilingual_fields_generation():
     assert "quote_english_translation" in result
     assert "Scientific Council" in result["quote_english_translation"]
 
+
+def test_confidential_document_is_blocked_from_llm():
+    confidential_text = (
+        "CONFIDENTIEL : Procès-verbal de délibération nominatif. "
+        "Contact: recteur@univ-constantine3.dz."
+    )
+    evaluator = RealLLMEvaluator(api_key="test")
+    res = evaluator.evaluate_evidence_with_llm(
+        indicator_id="1.3.1",
+        indicator_name="Admission target",
+        indicator_definition="Summary",
+        max_points=3.0,
+        evidence_text=confidential_text,
+        source_url_or_path="https://univ-constantine3.dz/pv",
+        methodology_question="Official question from PDF 2027",
+        allow_confidential=False,
+    )
+    assert res.get("error") == "DOCUMENT_CONFIDENTIEL_BLOQUE"
+    assert res.get("the_points_earned") == 0.0
+    assert res.get("classification") == "CONFIDENTIEL"
+
+
+def test_indicator_13_4_1_subscales_via_llm_evaluator():
+    evidence = "L'UC3 s'engage à la neutralité carbone d'ici 2035 couvrant les scopes 1, 2 et 3 complets."
+    mock_data = {
+        "quality": "specific",
+        "justifying_quote": "L'UC3 s'engage à la neutralité carbone d'ici 2035 couvrant les scopes 1, 2 et 3 complets.",
+        "is_self_contained": True,
+        "is_link_farm": False,
+        "is_target_or_action_declared": True,
+        "scopes_identified": "scopes_1_2_3_full",
+    }
+    google, genai = _mock_genai_client(mock_data)
+    with patch.dict(sys.modules, {"google": google, "google.genai": genai}):
+        evaluator = RealLLMEvaluator(api_key="test")
+        result = evaluator.evaluate_evidence_with_llm(
+            indicator_id="13.4.1",
+            indicator_name="Commitment to carbon neutral university",
+            indicator_definition="Summary",
+            max_points=5.0,
+            evidence_text=evidence,
+            source_url_or_path="https://univ-constantine3.dz/climat",
+            methodology_question="Official question from PDF 2027",
+            source_verified=True,
+        )
+    assert result["the_points_earned"] == 5.0
+    assert result["the_max_points"] == 5.0
+    assert len(result["components"]) == 4
+    comp_dict = {c["id"]: c["earned"] for c in result["components"]}
+    assert comp_dict["scopes_covered"] == 3.0
+    assert comp_dict["evidence_relevance"] == 1.0
+    assert comp_dict["public_visibility"] == 1.0
+
+

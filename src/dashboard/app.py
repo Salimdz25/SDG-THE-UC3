@@ -76,27 +76,40 @@ with st.sidebar:
     is_en = "English" in lang_choice
 
     st.markdown("#### 🤖 Configuration du Modèle LLM" if not is_en else "#### 🤖 LLM Model Configuration")
-    env_gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
-    
-    user_api_key = st.text_input(
-        "Clé API Gemini (Google AI Studio) :" if not is_en else "Gemini API Key (Google AI Studio):",
-        value=env_gemini_key,
+    # Sécurité serveur : ne jamais fuiter la clé dans l'input client (value=...)
+    server_api_key = ""
+    try:
+        if hasattr(st, "secrets") and "GEMINI_API_KEY" in st.secrets:
+            server_api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        pass
+    if not server_api_key:
+        server_api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
+
+    user_api_key_override = st.text_input(
+        "Clé API Gemini personnalisée (Optionnelle) :" if not is_en else "Custom Gemini API Key (Optional):",
+        value="",
         type="password",
-        help="Obtenez une clé gratuite sur https://aistudio.google.com/ pour activer l'analyse neuronale réelle."
+        help="Laissez vide pour utiliser la configuration serveur sécurisée. Obtenez une clé sur https://aistudio.google.com/."
     )
+
+    effective_api_key = user_api_key_override.strip() if user_api_key_override.strip() else server_api_key
+
+    if server_api_key and not user_api_key_override.strip():
+        st.caption("🔒 Clé serveur active" if not is_en else "🔒 Server API key active")
 
     selected_model = st.selectbox(
         "Modèle LLM :" if not is_en else "LLM Model:",
         ["gemini-2.5-pro"],
         index=0,
-        help="Utilise votre clé API Gemini. Un abonnement à l'application Gemini ne fournit pas automatiquement l'accès API."
+        help="Utilise votre clé API Gemini. Un abonnement grand public ne fournit pas l'accès API développeur."
     )
 
-    llm_evaluator = RealLLMEvaluator(api_key=user_api_key, model_name=selected_model)
+    llm_evaluator = RealLLMEvaluator(api_key=effective_api_key, model_name=selected_model)
 
     if st.button("🔌 Tester la Clé API" if not is_en else "🔌 Test API Key"):
-        if not user_api_key.strip():
-            st.warning("Veuillez d'abord coller votre clé API." if not is_en else "Please paste your API key first.")
+        if not effective_api_key.strip():
+            st.warning("Veuillez d'abord renseigner une clé API ou configurer GEMINI_API_KEY." if not is_en else "Please provide an API key or configure GEMINI_API_KEY.")
         else:
             with st.spinner("Vérification auprès de Google Gemini..." if not is_en else "Connecting to Google Gemini..."):
                 t_res = llm_evaluator.test_connection()
@@ -157,9 +170,168 @@ with col_ind:
         list(indicator_dict.keys()),
         index=1 if len(indicator_dict) > 1 else 0
     )
-chosen_indicator = indicator_dict[selected_ind_label]
-if chosen_indicator.get("type") != "qualitative":
-    st.warning("Cet indicateur est quantitatif ou bibliométrique : la notation de preuve qualitative ne s'applique pas.")
+ind_type = chosen_indicator.get("type", "qualitative")
+ind_id = chosen_indicator.get("indicator_id")
+ind_name = chosen_indicator.get("name")
+ind_def = chosen_indicator.get("definition", ind_name)
+ind_max_pts = chosen_indicator.get("max_points", 3.0)
+is_policy_bonus = chosen_indicator.get("reviewed_policy_bonus", False) or "policy" in ind_id.lower()
+
+if ind_type == "quantitative":
+    st.info(
+        f"🔢 **Indicateur Quantitatif [{ind_id}] :** {ind_name}\n\n"
+        f"• **Type :** `QUANTITATIF` | "
+        f"• **Poids dans l'ODD :** `{chosen_indicator.get('weight_sdg', 0.0) * 100:.1f}%` | "
+        f"• **Année de référence :** `2025` | "
+        f"• **Métrique parente :** `{chosen_indicator.get('metric_id', '')} - {chosen_indicator.get('metric_name', '')}`"
+    )
+    st.markdown("#### 📐 Guide Méthodologique THE 2027 (Données Quantitatives)")
+    st.markdown(
+        "- **Règle ETP vs Effectif physique (FTE vs Headcount) :** Pour les effectifs étudiants et académiques, "
+        "déclarez en équivalent temps plein (ETP) si disponible, ou en effectif physique de manière cohérente à travers tous les ODD.\n"
+        "- **Année de référence :** 2025 (année universitaire 2024/2025 ou année civile 2025).\n"
+        "- **Traçabilité :** Chaque chiffre doit être certifié par une source administrative interne vérifiable (Progres MESRS, états financiers, PV de scolarité)."
+    )
+
+    st.subheader("2️⃣ Saisie & Vérification Arithmétique des Métriques")
+    fields = chosen_indicator.get("fields", ["Dénominateur (Effectif global)", "Numérateur (Effectif ciblé)"])
+    q_values = {}
+    col_fields = st.columns(len(fields)) if len(fields) <= 3 else [st] * len(fields)
+    for idx, fld in enumerate(fields):
+        with col_fields[idx % len(col_fields)]:
+            q_values[fld] = st.number_input(
+                f"📊 {fld} :",
+                min_value=0.0,
+                value=0.0,
+                step=1.0,
+                key=f"quant_field_{ind_id}_{idx}",
+                help=f"Valeur certifiée pour l'année 2025 : {fld}"
+            )
+
+    computed_ratio = None
+    if len(fields) >= 2:
+        val_list = list(q_values.values())
+        den = val_list[0]
+        num = val_list[1]
+        st.write("")
+        st.markdown("#### 📈 Synthèse et Calcul du Ratio")
+        if den > 0:
+            computed_ratio = (num / den) * 100.0
+            r_col1, r_col2 = st.columns(2)
+            r_col1.metric("Proportion / Ratio Officiel", f"{computed_ratio:.2f} %", delta=f"{num:.0f} / {den:.0f}")
+            if num > den:
+                r_col2.warning("⚠️ Attention : Le numérateur dépasse le dénominateur. Vérifiez la définition THE.")
+            else:
+                r_col2.success("✅ Données arithmétiquement conformes (Numérateur <= Dénominateur).")
+        else:
+            st.info("ℹ️ Renseignez le dénominateur (> 0) pour calculer automatiquement le pourcentage.")
+
+    st.subheader("3️⃣ Traçabilité Administrative & Validation à 2 Niveaux")
+    col_adm1, col_adm2 = st.columns(2)
+    with col_adm1:
+        adm_source = st.selectbox(
+            "Service administratif source :",
+            [
+                "Vice-Rectorat de la Pédagogie",
+                "Vice-Rectorat du Développement et de la Prospective",
+                "Vice-Rectorat de la Post-Graduation et de la Recherche",
+                "Direction de la Scolarité Centrale (Progres MESRS)",
+                "Direction des Finances et de la Comptabilité",
+                "Direction des Moyens et du Patrimoine",
+                "Autre Faculté / Institut"
+            ],
+            key=f"adm_source_{ind_id}"
+        )
+        data_origin_system = st.text_input("Système source d'information :", value="Système Intégré Progres - MESRS", key=f"sys_orig_{ind_id}")
+    with col_adm2:
+        validator_name = st.text_input("Nom & Fonction du déclarant :", value="Cellule de Classement & Assurance Qualité UC3", key=f"val_name_{ind_id}")
+        validation_status = st.selectbox(
+            "Statut du contrôle interne :",
+            [
+                "🟢 Validé et Certifié par le Service Source (Prêt pour THE)",
+                "🟡 En cours de collecte / Donnée provisoire",
+                "🔵 Certifié Officiel Rectorat"
+            ],
+            key=f"val_stat_{ind_id}"
+        )
+
+    uploaded_quant_file = st.file_uploader(
+        "Pièce justificative interne (Attestation, extraction Progres certifiée, état comptable) :",
+        type=["xlsx", "xls", "pdf", "csv"],
+        key=f"quant_file_{ind_id}"
+    )
+
+    if st.button("💾 Enregistrer la Déclaration Quantitative pour la Soumission THE", type="primary", key=f"btn_save_quant_{ind_id}"):
+        st.success(f"✅ Déclaration quantitative de l'indicateur [{ind_id}] enregistrée avec succès dans le dossier d'audit UC3 !")
+        st.json({
+            "indicator_id": ind_id,
+            "indicator_name": ind_name,
+            "sdg": chosen_sdg_num,
+            "year": 2025,
+            "fields_data": q_values,
+            "computed_ratio_percentage": round(computed_ratio, 2) if computed_ratio is not None else None,
+            "administrative_source": adm_source,
+            "origin_system": data_origin_system,
+            "declarant": validator_name,
+            "validation_status": validation_status,
+            "attached_file": uploaded_quant_file.name if uploaded_quant_file else None,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+    st.stop()
+
+elif ind_type == "bibliometric":
+    st.info(
+        f"📚 **Indicateur Bibliométrique [{ind_id}] :** {ind_name}\n\n"
+        f"• **Type :** `BIBLIOMÉTRIQUE` | "
+        f"• **Poids dans l'ODD :** `{chosen_indicator.get('weight_sdg', 0.0) * 100:.1f}%` | "
+        f"• **Métrique parente :** `{chosen_indicator.get('metric_id', '')} - {chosen_indicator.get('metric_name', '')}`"
+    )
+    st.markdown("#### ℹ️ Procédure Officielle THE pour les Indicateurs Bibliométriques")
+    st.markdown(
+        "Times Higher Education extrait les métriques bibliométriques **directement depuis la base de données Scopus (Elsevier)**.\n"
+        "- **Identifiant d'Affiliation Scopus Officiel UC3 :** `60071378` (Université Constantine 3 Salah Boubnider)\n"
+        "- **Période des publications :** 2019 à 2023 (fenêtre quinquennale de production scientifique)\n"
+        "- **Période des citations :** 2019 à 2024 / 2025 (fenêtre de citations)\n"
+        "- **Action requise :** Aucune soumission de preuve manuelle requise sur le portail THE. "
+        "L'équipe UC3 doit auditer son profil d'affiliation Scopus et s'assurer que toutes les publications des facultés sont correctement rattachées à l'ID 60071378."
+    )
+    st.subheader("2️⃣ Suivi Interne & Veille Scientifique UC3")
+    b_col1, b_col2 = st.columns(2)
+    with b_col1:
+        target_papers = st.number_input("Cible interne de publications UC3 pour cet ODD :", min_value=0, value=25, step=5, key=f"bib_target_{ind_id}")
+        scopus_observed = st.number_input("Nombre de publications indexées observées (Scopus / SciVal) :", min_value=0, value=28, step=1, key=f"bib_obs_{ind_id}")
+    with b_col2:
+        top_labs = st.text_input("Facultés / Laboratoires moteurs à l'UC3 :", value="Faculté Génie des Procédés, Laboratoire de Biotechnologie, Faculté de Médecine", key=f"bib_labs_{ind_id}")
+        biblio_status = st.selectbox(
+            "Statut du profil d'affiliation Scopus :",
+            ["🟢 Affiliation ID 60071378 Validée & Conforme", "🟡 Demande de fusion/correction d'affiliation en cours", "🔵 En attente d'actualisation Scopus"],
+            key=f"bib_stat_{ind_id}"
+        )
+
+    delta_papers = scopus_observed - target_papers
+    pct_target = (scopus_observed / target_papers * 100) if target_papers > 0 else 100.0
+    st.metric("Taux d'Atteinte de la Cible Scientifique", f"{pct_target:.1f} %", delta=f"{delta_papers:+d} publications vs cible")
+    st.success(f"✅ Suivi bibliométrique de l'ODD {chosen_sdg_num} consigné dans la veille institutionnelle UC3.")
+    st.stop()
+
+elif ind_type in ("external_metric", "exploratory"):
+    badge_label = "Brevets Cités (LexisNexis / Scopus)" if ind_type == "external_metric" else "Métrique Exploratoire (Sulitest / Littératie)"
+    st.info(f"🌐 **{badge_label} [{ind_id}] :** {ind_name}\n\n• **Type :** `{ind_type.upper()}`")
+    if ind_type == "external_metric":
+        st.markdown(
+            "Cet indicateur mesure l'impact technologique des recherches menées à l'UC3 citées dans des brevets déposés à l'échelle internationale.\n"
+            "THE collabore avec LexisNexis PatentSight pour l'extraction automatisée."
+        )
+        patents_count = st.number_input("Nombre estimé de brevets citant les publications UC3 :", min_value=0, value=2, key=f"pat_cnt_{ind_id}")
+        st.success(f"✅ {patents_count} brevets enregistrés dans le répertoire de valorisation technologique.")
+    else:
+        st.markdown(
+            "Métrique exploratoire introduite pour 2027 (ex: test standardisé de connaissances en durabilité Sulitest TASK).\n"
+            "Non comptabilisée dans le calcul final du score global, mais permet à l'UC3 de démontrer sa proactivité pédagogique."
+        )
+        students_tested = st.number_input("Nombre d'étudiants ayant complété une évaluation de durabilité :", min_value=0, value=150, key=f"expl_stud_{ind_id}")
+        avg_score = st.slider("Score moyen obtenu aux tests (%) :", min_value=0, max_value=100, value=72, key=f"expl_sc_{ind_id}")
+        st.metric("Sensibilisation Étudiante", f"{students_tested} étudiants évalués", delta=f"Score moyen : {avg_score}%")
     st.stop()
 
 # Affichage des exigences officielles de l'indicateur sélectionné

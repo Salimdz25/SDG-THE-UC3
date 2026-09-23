@@ -40,16 +40,24 @@ class UC3MultilingualOCREngine:
                     "text": text.strip()
                 }
             except Exception as e:
+                err_msg = str(e)
+                if "tesseract is not installed" in err_msg.lower() or "tesseractnotfound" in err_msg.lower():
+                    status_name = "OCR_INDISPONIBLE"
+                else:
+                    status_name = "error"
                 return {
-                    "status": "error",
+                    "status": status_name,
                     "error_message": f"Erreur lors de l'OCR Tesseract: {e}",
                     "text": ""
                 }
         else:
-            # Fallback structuré si tesseract binaire n'est pas configuré sur le poste
+            # Règle d'or : Zéro hallucination. Jamais de texte simulé ou inventé.
             return {
-                "status": "simulated",
-                "message": "Pytesseract ou binaire Tesseract non présent sur le système. Mode d'extraction standard activé.",
+                "status": "OCR_INDISPONIBLE",
+                "error_message": (
+                    "Le moteur OCR (pytesseract / binaire Tesseract) n'est pas disponible sur ce système. "
+                    "Impossible d'extraire automatiquement le contenu sans OCR opérationnel."
+                ),
                 "source": str(path),
-                "text": f"[Contenu extrait du document scanné : {path.name}]"
+                "text": ""
             }
