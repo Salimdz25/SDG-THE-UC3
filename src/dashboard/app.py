@@ -26,6 +26,7 @@ from src.ingestion.facebook_collector import FacebookInstitutionalCollector
 from src.rag.llm_engine import RealLLMEvaluator
 from src.export.exporter import UC3ReportExporter
 from src.rag.models import IndicatorFiche
+from src.methodology.pdf_questions import indicator_question
 
 # Configuration de la page Streamlit
 st.set_page_config(
@@ -77,9 +78,9 @@ with st.sidebar:
 
     selected_model = st.selectbox(
         "Modèle LLM :",
-        ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-1.5-pro"],
+        ["gemini-2.5-pro"],
         index=0,
-        help="gemini-2.0-flash est le modèle recommandé par Google AI Studio (rapide et très disponible)."
+        help="Utilise votre clé API Gemini. Un abonnement à l'application Gemini ne fournit pas automatiquement l'accès API."
     )
 
     llm_evaluator = RealLLMEvaluator(api_key=user_api_key, model_name=selected_model)
@@ -98,14 +99,14 @@ with st.sidebar:
     if llm_evaluator.is_configured():
         st.success("🟢 **LLM Réel Connecté (Gemini)**")
     else:
-        st.warning("🟡 **Mode Audit Local Actif**\n*(Saisissez votre clé Gemini ci-dessus pour activer le LLM réel)*")
+        st.warning("Clé API Gemini requise : aucun score ne sera attribué sans le modèle.")
 
     st.divider()
     st.markdown("#### 📜 Règles Méthodologiques THE")
     st.markdown("- **Année Cible :** `2025`")
     st.markdown("- **Preuve Publique :** URL directe = 1 pt / Fichier joint = 0 pt")
     st.markdown("- **Autosuffisance :** Annuaire de liens = Rejet")
-    st.markdown("- **Zéro-Hallucination :** Absence de donnée formelle")
+    st.markdown("- **Contrôle :** citation littérale exigée, puis validation humaine")
 
 # --- EN-TÊTE PRINCIPAL ---
 st.title("📥 Ingestion & Évaluation de Preuves en Direct (THE 2027)")
@@ -144,7 +145,10 @@ with col_ind:
         list(indicator_dict.keys()),
         index=1 if len(indicator_dict) > 1 else 0
     )
-    chosen_indicator = indicator_dict[selected_ind_label]
+chosen_indicator = indicator_dict[selected_ind_label]
+if chosen_indicator.get("type") != "qualitative":
+    st.warning("Cet indicateur est quantitatif ou bibliométrique : la notation de preuve qualitative ne s'applique pas.")
+    st.stop()
 
 # Affichage des exigences officielles de l'indicateur sélectionné
 ind_id = chosen_indicator.get("indicator_id")
@@ -154,11 +158,22 @@ ind_max_pts = chosen_indicator.get("max_points", 3.0)
 is_policy_bonus = chosen_indicator.get("reviewed_policy_bonus", False) or "policy" in ind_id.lower()
 
 st.info(
-    f"📘 **Exigence THE 2027 pour [{ind_id}] :** {ind_def}\n\n"
+    f"📘 **Résumé de l'indicateur [{ind_id}] :** {ind_def}\n\n"
     f"• **Type :** `{chosen_indicator.get('type', 'qualitative').upper()}` | "
     f"• **Points Max :** `{ind_max_pts} pts` | "
     f"• **Année Requise :** `2025`" + (" | • **Bonus Révision Politique (2022-2026) :** `+1.0 pt`" if is_policy_bonus else "")
 )
+
+# Chargement et affichage de la question officielle intégrale du PDF THE 2027
+pdf_path_default = os.environ.get("THE_2027_PDF") or ""
+official_question_display = ""
+try:
+    official_question_display = indicator_question(pdf_path_default, ind_id)
+except Exception as e_pdf:
+    official_question_display = f"⚠️ Impossible de charger la question officielle du PDF : {e_pdf}. Configurez THE_2027_PDF."
+
+with st.expander("📜 Question Officielle, Précisions & Critères THE 2027 (extraits du PDF)", expanded=True):
+    st.markdown(official_question_display)
 
 st.write("")
 
@@ -176,6 +191,8 @@ tab_text, tab_file, tab_url = st.tabs([
 extracted_content = ""
 source_path_declared = ""
 source_type_detected = "TEXTE"
+source_verified = False
+source_is_attachment = False
 
 with tab_text:
     pasted_text = st.text_area(
@@ -197,7 +214,7 @@ with tab_file:
     )
     if uploaded_file is not None:
         # Enregistrement temporaire pour le parser
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{uploaded_file.name}") as tmp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix) as tmp:
             tmp.write(uploaded_file.getbuffer())
             tmp_path = tmp.name
 
@@ -211,8 +228,12 @@ with tab_file:
             extracted_content = file_text
             source_path_declared = uploaded_file.name
             source_type_detected = parse_res.get("source_type", "FICHIER")
+            source_verified = True
+            source_is_attachment = True
         except Exception as e:
             st.error(f"Erreur d'extraction du fichier : {e}")
+        finally:
+            Path(tmp_path).unlink(missing_ok=True)
 
 with tab_url:
     input_url = st.text_input(
@@ -228,9 +249,7 @@ with tab_url:
                 with st.spinner("Récupération en cours..."):
                     if "facebook.com" in input_url.lower():
                         st.info("ℹ️ URL Facebook détectée. Le collecteur institutionnel enregistre les métadonnées.")
-                        extracted_content = f"Publication Facebook institutionnelle UC3 : {input_url}"
-                        source_path_declared = input_url
-                        source_type_detected = "FACEBOOK"
+                        st.warning("Le contenu Facebook n'a pas été récupéré. Fournissez une page institutionnelle directement lisible.")
                     else:
                         crawl_res = web_crawler.fetch_page(input_url)
                         if crawl_res.get("status") == "success":
@@ -238,10 +257,20 @@ with tab_url:
                             extracted_content = crawl_res.get("full_text", "")
                             source_path_declared = input_url
                             source_type_detected = "WEB_PAGE"
+                            source_verified = True
+                            st.session_state["verified_web_evidence"] = (input_url, extracted_content)
                             with st.expander("Aperçu du contenu web extrait :"):
                                 st.write(extracted_content[:600] + "...")
                         else:
                             st.error(f"Impossible d'accéder à l'URL : {crawl_res.get('error_message')}")
+
+if not source_verified and uploaded_file is None and not pasted_text.strip():
+    cached_url, cached_text = st.session_state.get("verified_web_evidence", ("", ""))
+    if cached_url == input_url.strip() and cached_text:
+        extracted_content = cached_text
+        source_path_declared = cached_url
+        source_verified = True
+        source_type_detected = "WEB_PAGE"
 
 # Entité UC3 concernée
 entity_input = st.text_input(
@@ -261,95 +290,113 @@ btn_eval = st.button("🚀 Évaluer la Preuve selon le Référentiel THE 2027", 
 
 if btn_eval:
     if not extracted_content.strip():
-        st.error("⚠️ Aucune preuve n'a été saisie. Veuillez coller du texte, uploader un fichier ou spécifier une URL valide.")
+        if input_url.strip() and not source_verified:
+            st.error("⚠️ URL inaccessible ou non explorée. Cliquez sur 'Explorer et Récupérer l'URL' et assurez-vous que la page est accessible. Aucun score ne peut être calculé sur une URL non récupérée.")
+        else:
+            st.error("⚠️ Aucune preuve n'a été saisie. Veuillez coller du texte, uploader un fichier ou explorer une URL valide.")
+        st.stop()
     else:
         with st.spinner("Analyse approfondie en cours par l'auditeur THE..."):
             evaluation_output = None
             used_real_llm = False
 
-            # Tentative d'utilisation du LLM Réel si configuré
-            if llm_evaluator.is_configured():
-                llm_res = llm_evaluator.evaluate_evidence_with_llm(
-                    indicator_id=ind_id,
-                    indicator_name=ind_name,
-                    indicator_definition=ind_def,
-                    max_points=ind_max_pts,
-                    evidence_text=extracted_content,
-                    source_url_or_path=source_path_declared,
-                    target_year=2025,
-                    is_policy_bonus_eligible=is_policy_bonus
-                )
-                if "error" not in llm_res:
-                    evaluation_output = llm_res
-                    used_real_llm = True
-                else:
-                    st.warning(f"⚠️ Notification LLM : {llm_res.get('message')}. Bascule sur le simulateur analytique local.")
+            if not llm_evaluator.is_configured():
+                st.error("Clé API Gemini Pro requise. Aucun score calculé.")
+                st.stop()
 
-            # Fallback sur le simulateur d'évaluation THE 2027 si pas de LLM ou erreur
-            if not evaluation_output:
-                local_evaluator = THEEvidenceEvaluator(target_year=2025)
-                local_res = local_evaluator.audit_evidence(
-                    indicator_id=ind_id,
-                    indicator_definition=ind_def,
-                    evidence_text=extracted_content,
-                    source_url_or_path=source_path_declared,
-                    is_policy_indicator=is_policy_bonus
-                )
-                # Formattage conforme
-                quote = extracted_content[:350] + ("..." if len(extracted_content) > 350 else "")
-                
-                status_cat = "Information vérifiée" if (local_res["quality"] == "specific" and local_res["is_public"]) else (
-                    "Inférence" if local_res["quality"] == "general" else (
-                        "Information à confirmer" if not local_res["is_public"] else "Absence de donnée"
-                    )
-                )
+            # Bloquer les URLs non récupérées dans l'onglet URL
+            if source_type_detected == "WEB_PAGE" and not source_verified:
+                st.error("La page web doit être effectivement récupérée. Un texte collé et une URL déclarée ne prouvent pas sa publication.")
+                st.stop()
 
-                evaluation_output = {
-                    "information_found": extracted_content.split("\n")[0][:150],
-                    "detected_year": local_res["detected_year"],
-                    "justifying_quote": quote,
-                    "uc3_entity": entity_input,
-                    "quality": local_res["quality"],
-                    "quality_justification": "Évalué selon l'adéquation des concepts clés, mentions institutionnelles et données chiffrées.",
-                    "is_public": local_res["is_public"],
-                    "is_self_contained": local_res["is_self_contained"],
-                    "is_link_farm": local_res["is_link_farm"],
-                    "confidence": "élevée" if local_res["quality"] == "specific" else "moyenne",
-                    "status_category": status_cat,
-                    "gap_or_alert": " | ".join(local_res["alerts"]) if local_res["alerts"] else "Aucune non-conformité majeure.",
-                    "proposed_action": "publier" if not local_res["is_public"] else ("valider" if local_res["quality"] == "specific" else "compléter"),
-                    "the_points_earned": local_res["total_points"],
-                    "the_max_points": local_res["max_possible_points"],
-                    "the_percentage": local_res["score_percentage"],
-                    "recommendations": " | ".join(local_res["recommendations"]) if local_res["recommendations"] else "Preuve bien documentée.",
-                    "engine_used": "Simulateur Analytique Local THE 2027"
-                }
+            try:
+                pdf_path = os.environ.get("THE_2027_PDF", "")
+                question = indicator_question(pdf_path, ind_id)
+            except (FileNotFoundError, ValueError, ImportError) as exc:
+                st.error(f"Méthodologie indisponible : {exc}. Aucun score calculé.")
+                st.stop()
+
+            llm_res = llm_evaluator.evaluate_evidence_with_llm(
+                indicator_id=ind_id,
+                indicator_name=ind_name,
+                indicator_definition=ind_def,
+                max_points=ind_max_pts,
+                evidence_text=extracted_content,
+                source_url_or_path=source_path_declared,
+                target_year=2025,
+                is_policy_bonus_eligible=is_policy_bonus,
+                methodology_question=question,
+                source_verified=source_verified,
+                source_is_attachment=source_is_attachment
+            )
+            if "error" in llm_res:
+                st.error(f"Évaluation impossible : {llm_res.get('message')}. Aucun score calculé.")
+                st.stop()
+            evaluation_output = llm_res
+            used_real_llm = True
 
             # =========================================================================
             # ÉTAPE 4 : AFFICHAGE DE LA FICHE STRUCTURÉE CONFORME
             # =========================================================================
             st.markdown("---")
-            engine_badge = "🤖 Évaluation par LLM Réel (Gemini)" if used_real_llm else "⚙️ Évaluation par Moteur Analytique Local"
+            engine_badge = "🤖 Évaluation par LLM Réel (Gemini Pro)" if used_real_llm else "⚙️ Évaluation par Moteur Analytique Local"
             st.success(f"### 📋 Fiche d'Évaluation Structurée — {engine_badge}")
 
-            # KPI CARDS
-            k1, k2, k3, k4 = st.columns(4)
-            k1.metric("Points THE", f"{evaluation_output['the_points_earned']} / {evaluation_output['the_max_points']} pts")
-            k2.metric("Qualité de la Preuve", evaluation_output["quality"].upper())
-            k3.metric("Caractère Public", "PUBLIQUE (+1 pt)" if evaluation_output["is_public"] else "NON PUBLIC (0 pt)")
-            k4.metric("Catégorie de Fiabilité", evaluation_output["status_category"])
+            # 4 COMPOSANTES DU BARÈME THE 2027
+            st.markdown("#### 🎯 Décomposition des 4 Composantes du Barème THE 2027")
+            c1, c2, c3, c4, c5 = st.columns(5)
+            c1.metric(
+                "1. Déclaration",
+                f"{evaluation_output.get('statement_points', 0.0):.1f} / 1.0 pt",
+                help="1.0 pt si l'action ou politique est déclarée et pertinente, 0 sinon."
+            )
+            c2.metric(
+                "2. Pertinence",
+                f"{evaluation_output.get('evidence_points', 0.0):.1f} / 1.0 pt",
+                delta="Spécifique (1.0 pt)" if evaluation_output.get("quality") == "specific" else ("Générale (0.5 pt)" if evaluation_output.get("quality") == "general" else "Hors-sujet (0.0 pt)"),
+                delta_color="normal" if evaluation_output.get("quality") in ("specific", "general") else "inverse"
+            )
+            c3.metric(
+                "3. Caractère Public",
+                f"{evaluation_output.get('public_points', 0.0):.1f} / 1.0 pt",
+                delta="Page web (+1.0 pt)" if evaluation_output.get("public_points", 0.0) > 0 else "Non public / PJ (0.0 pt)",
+                delta_color="normal" if evaluation_output.get("public_points", 0.0) > 0 else "off"
+            )
+            pol_pts = evaluation_output.get("policy_bonus_points", 0.0)
+            c4.metric(
+                "4. Bonus Politique",
+                f"{pol_pts:.1f} / 1.0 pt" if is_policy_bonus else "N/A",
+                delta="Révisée 2022-2026 (+1.0 pt)" if pol_pts > 0 else ("Non révisée (0.0 pt)" if is_policy_bonus else None),
+                delta_color="normal" if pol_pts > 0 else "off",
+                help="Prévu uniquement si la question officielle THE inclut une clause de révision 2022-2026."
+            )
+            c5.metric(
+                "Total THE",
+                f"{evaluation_output['the_points_earned']:.1f} / {evaluation_output['the_max_points']:.1f} pts",
+                delta=f"{evaluation_output.get('the_percentage', 0.0)}%"
+            )
+
+            st.write("")
+
+            # KPI CARDS RÉCAPITULATIFS
+            k1, k2, k3 = st.columns(3)
+            k1.metric("Qualité de la Preuve", evaluation_output["quality"].upper())
+            k2.metric("Statut de Publication", "PUBLIQUE (Page web vérifiée)" if evaluation_output.get("is_public") else "INTERNE / PIÈCE JOINTE (0 pt public)")
+            k3.metric("Catégorie de Fiabilité", evaluation_output["status_category"])
 
             # TABLEAU DÉTAILLÉ DE LA FICHE
             fiche_rows = [
                 ("ODD et indicateur", f"{ind_id} - {ind_name}"),
-                ("Exigence méthodologique THE", ind_def),
+                ("Question officielle THE (PDF 2027)", question[:300] + ("..." if len(question) > 300 else "")),
                 ("Information trouvée", evaluation_output.get("information_found", "")),
                 ("Année concernée (Priorité 2025)", str(evaluation_output.get("detected_year") or "Non spécifiée")),
                 ("Source exacte", source_path_declared or "Texte fourni"),
                 ("Extrait justificatif (verbatim)", evaluation_output.get("justifying_quote", "")),
                 ("Entité UC3 concernée", evaluation_output.get("uc3_entity") or entity_input),
                 ("Qualité de la preuve", f"{evaluation_output.get('quality', '').upper()} ({evaluation_output.get('quality_justification', '')})"),
-                ("Publicité", "PUBLIQUE" if evaluation_output.get("is_public") else "INTERNE / PIÈCE JOINTE NON PUBLIQUE"),
+                ("Publicité", "PUBLIQUE (+1.0 pt)" if evaluation_output.get("is_public") else "INTERNE / PIÈCE JOINTE (0.0 pt)"),
+                ("Décomposition des points", f"Déclaration: {evaluation_output.get('statement_points', 0.0)} pt | Pertinence: {evaluation_output.get('evidence_points', 0.0)} pt | Publicité: {evaluation_output.get('public_points', 0.0)} pt | Bonus Politique: {evaluation_output.get('policy_bonus_points', 0.0)} pt"),
+                ("Total points THE", f"{evaluation_output.get('the_points_earned', 0.0)} / {evaluation_output.get('the_max_points', 3.0)} pts ({evaluation_output.get('the_percentage', 0.0)}%)"),
                 ("Niveau de confiance", evaluation_output.get("confidence", "").upper()),
                 ("Lacune ou Alerte méthodologique", evaluation_output.get("gap_or_alert", "")),
                 ("Action proposée", evaluation_output.get("proposed_action", "").upper()),

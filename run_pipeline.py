@@ -107,10 +107,7 @@ def main():
     elif args.pilot:
         run_pilot_audit()
     else:
-        # Exécution par défaut : Audit + Exports
-        results = run_pilot_audit()
-        run_exports(results)
-        print("\n💡 Pour lancer l'interface interactive : python run_pipeline.py --dashboard")
+        run_dashboard()
 
 if __name__ == "__main__":
     main()

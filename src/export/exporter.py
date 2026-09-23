@@ -23,6 +23,7 @@ class UC3ReportExporter:
         rows = []
         for f in fiches_data:
             rows.append({
+                "Statut Dossier": "Démonstration (Corpus fictif)",
                 "ODD & Indicateur": f.get("odd_indicator", ""),
                 "Titre Indicateur": f.get("indicator_title", ""),
                 "Exigence THE 2027": f.get("methodological_requirement", ""),
@@ -69,6 +70,11 @@ class UC3ReportExporter:
         sub_run.bold = True
         sub_run.font.size = Pt(13)
         sub_run.font.color.rgb = RGBColor(180, 40, 40)
+
+        demo_run = title_p.add_run("[RAPPORT DE DÉMONSTRATION — CORPUS FICTIF NON OFFICIEL]\nCe dossier a été généré à titre de démonstration technique. Ses données ne constituent pas une collecte officielle de l'UC3 et ne doivent pas être soumises.\n")
+        demo_run.italic = True
+        demo_run.font.size = Pt(9.5)
+        demo_run.font.color.rgb = RGBColor(140, 40, 40)
 
         meta_p = doc.add_paragraph(f"Année cible : {pilot_data.get('target_year', 2025)} | ODD Pilote : {pilot_data.get('sdg_name', 'ODD 17')}")
         meta_p.alignment = WD_ALIGN_PARAGRAPH.CENTER

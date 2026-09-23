@@ -159,7 +159,8 @@ class THEEvidenceEvaluator:
                 recommendations.append("Soumettre un document ou un lien qui porte explicitement sur les exigences de cet indicateur.")
             else:
                 # Évaluer la précision (Spécifique vs Générale)
-                if (len(matched_themes) >= 2 or len(direct_overlap) >= 3) and (has_numeric_data or len(text_lower) > 90):
+                if ((len(matched_themes) >= 1 or len(direct_overlap) >= 1) and has_numeric_data and len(text_lower) > 60) or \
+                   ((len(matched_themes) >= 2 or len(direct_overlap) >= 3) and len(text_lower) > 90):
                     quality = "specific"
                 elif len(matched_themes) >= 1 or len(direct_overlap) >= 1:
                     quality = "general"

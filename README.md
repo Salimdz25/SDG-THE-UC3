@@ -86,6 +86,20 @@ splendid-lavoisier/
 
 ## 🚀 Guide de Démarrage
 
+### Évaluation réelle avec Gemini Pro
+
+Le parcours principal évalue une seule **preuve qualitative** à la fois. Installez les dépendances avec `python -m pip install -r requirements.txt`, puis configurez `GEMINI_API_KEY` et `THE_2027_PDF` (chemin absolu du document officiel *Sustainability Impact Ratings Methodology 2027 v1.0*). Sous PowerShell :
+
+```powershell
+$env:GEMINI_API_KEY = "votre-cle-api"
+$env:THE_2027_PDF = "C:\\chemin\\vers\\THE.SustainabilityImpactRatings.METHODOLOGY.2027.v1.0.pdf"
+python run_pipeline.py
+```
+
+Ne commitez jamais la clé ni le PDF méthodologique. Le modèle sélectionné est `gemini-2.5-pro`. L'abonnement grand public à Gemini Pro et la facturation de l'API Gemini sont distincts : vérifiez l'accès API associé à votre clé. Sans clé, PDF, page effectivement récupérée ou citation exacte, le tableau de bord ne produit aucun score. Une pièce jointe analysable est évaluée comme non publique. Le score reste une **estimation interne**, soumise à validation humaine, et non une décision officielle de THE.
+
+`--pilot` et `--export` exécutent encore un ancien corpus fictif de démonstration ; leurs chiffres et rapports ne constituent pas une collecte UC3 vérifiée et ne doivent pas être soumis.
+
 ### 1. Prérequis
 - Python 3.10+
 - Dépendances installées : `streamlit`, `pandas`, `openpyxl`, `python-docx`, `pypdf`, `beautifulsoup4`, `pytest`.

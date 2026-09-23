@@ -43,8 +43,14 @@ class UC3WebCrawler:
         """
         fetch_time = datetime.now().isoformat()
         try:
-            resp = self.session.get(url, timeout=self.timeout)
+            if urlparse(url).scheme != "https" or not self.is_allowed_url(url):
+                raise ValueError("Adresse HTTPS hors des domaines institutionnels autorisés")
+            resp = self.session.get(url, timeout=self.timeout, allow_redirects=False)
+            if 300 <= resp.status_code < 400:
+                raise ValueError("Redirection non autorisée : vérifiez la destination séparément")
             resp.raise_for_status()
+            if "text/html" not in resp.headers.get("Content-Type", ""):
+                raise ValueError("La source ne fournit pas une page HTML lisible")
             html = resp.text
             return self.parse_html(html, url=url, fetch_timestamp=fetch_time)
         except Exception as e:
