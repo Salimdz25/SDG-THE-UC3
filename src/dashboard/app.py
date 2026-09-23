@@ -6,6 +6,7 @@ THE Sustainability Impact Ratings 2027 (v1.0)
 
 import sys
 import os
+import hashlib
 import tempfile
 from pathlib import Path
 from datetime import datetime
@@ -23,7 +24,7 @@ from src.evaluation.the_evaluator import THEEvidenceEvaluator
 from src.ingestion.doc_parser import DocumentParser
 from src.ingestion.web_crawler import UC3WebCrawler
 from src.ingestion.facebook_collector import FacebookInstitutionalCollector
-from src.rag.llm_engine import RealLLMEvaluator
+from src.rag.llm_engine import RealLLMEvaluator, GEMINI_MODELS
 from src.export.exporter import UC3ReportExporter
 from src.rag.models import IndicatorFiche
 from src.methodology.pdf_questions import indicator_question
@@ -100,17 +101,20 @@ with st.sidebar:
 
     selected_model = st.selectbox(
         "Modèle LLM :" if not is_en else "LLM Model:",
-        [
-            "gemini-3.1-pro-preview",
-            "gemini-2.5-flash",
-            "gemini-3-flash-preview",
-            "gemini-2.5-pro",
-        ],
+        GEMINI_MODELS,
         index=0,
-        help="Recommandé par Google : gemini-3.1-pro-preview (ou gemini-2.5-flash)."
+        help="Gemini 3.6 Flash : offre gratuite sous réserve des quotas du projet. Gemini 3.1 Pro Preview : facturation API requise."
     )
 
-    llm_evaluator = RealLLMEvaluator(api_key=effective_api_key, model_name=selected_model)
+    config_id = (hashlib.sha256(effective_api_key.strip().encode()).hexdigest(), selected_model)
+    if st.session_state.get("gemini_config_id") != config_id:
+        for status_key in ("gemini_status", "gemini_active_model", "gemini_error_detail"):
+            st.session_state.pop(status_key, None)
+        st.session_state["gemini_config_id"] = config_id
+    llm_evaluator = RealLLMEvaluator(
+        api_key=effective_api_key,
+        model_name=st.session_state.get("gemini_active_model", selected_model),
+    )
 
     if st.button("🔌 Tester la Clé API" if not is_en else "🔌 Test API Key"):
         if not effective_api_key.strip():
@@ -134,6 +138,8 @@ with st.sidebar:
         st.success(f"🟢 **LLM Réel Validé ({active_mod})**" if not is_en else f"🟢 **Real LLM Verified ({active_mod})**")
     elif gem_status == "error":
         st.error("🔴 **Connexion Non Établie (Erreur API)**" if not is_en else "🔴 **Connection Failed (API Error)**")
+    elif gem_status == "unavailable":
+        st.warning("🟠 Gemini temporairement saturé. Réessayez dans quelques minutes." if not is_en else "🟠 Gemini temporarily overloaded. Try again in a few minutes.")
     elif effective_api_key.strip():
         st.info("🟡 **Clé Renseignée (Cliquez sur 'Tester la Clé API')**" if not is_en else "🟡 **API Key Provided (Click 'Test API Key')**")
     else:
@@ -531,7 +537,8 @@ if btn_eval:
                 source_is_attachment=source_is_attachment
             )
             if "error" in llm_res:
-                st.session_state["gemini_status"] = "error"
+                temporary = llm_res["error"] == "SERVICE_TEMPORAIREMENT_INDISPONIBLE"
+                st.session_state["gemini_status"] = "unavailable" if temporary else "error"
                 st.session_state["gemini_error_detail"] = llm_res.get("message", "")
                 st.error(f"Évaluation impossible : {llm_res.get('message')}. Aucun score calculé.")
                 st.stop()

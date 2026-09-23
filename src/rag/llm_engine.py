@@ -11,15 +11,19 @@ Architecture découplée :
 import os
 import json
 import re
+import random
 from typing import Dict, Any, Optional
 from datetime import datetime
 
 from src.evaluation.scoring_rules_engine import IndicatorScoringRulesEngine
 from src.security.sanitizer import sanitize_for_llm
 
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
+GEMINI_MODELS = (DEFAULT_GEMINI_MODEL, "gemini-3.1-pro-preview")
+
 
 class RealLLMEvaluator:
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.1-pro-preview", client: Any = None):
+    def __init__(self, api_key: Optional[str] = None, model_name: str = DEFAULT_GEMINI_MODEL, client: Any = None):
         raw_key = (api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
         raw_key = raw_key.strip('"').strip("'").strip()
         self.api_key = raw_key if raw_key else None
@@ -57,7 +61,7 @@ class RealLLMEvaluator:
             return {"valid": False, "message": "Aucune clé API renseignée. Veuillez renseigner GEMINI_API_KEY."}
 
         models_to_test = [self.model_name]
-        for candidate in ["gemini-3.1-pro-preview", "gemini-2.5-flash", "gemini-3-flash-preview"]:
+        for candidate in [DEFAULT_GEMINI_MODEL]:
             if candidate not in models_to_test:
                 models_to_test.append(candidate)
 
@@ -101,7 +105,7 @@ class RealLLMEvaluator:
         elif any(k in err_lower for k in ["404", "not_found", "no longer available"]):
             msg = (
                 f"Modèle '{self.model_name}' indisponible (404 Not Found).\n"
-                f"Google recommande d'utiliser 'gemini-3.1-pro-preview'. Détails : {err_str}"
+                f"Vérifiez les modèles accessibles à votre projet Google AI Studio. Détails : {err_str}"
             )
         else:
             msg = f"Erreur de connexion API Gemini : {err_str}"
@@ -233,7 +237,7 @@ Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown sup
             from google.genai import types
 
             models_to_try = [self.model_name]
-            for candidate in ["gemini-3.1-pro-preview", "gemini-2.5-flash", "gemini-3-flash-preview"]:
+            for candidate in [DEFAULT_GEMINI_MODEL]:
                 if candidate not in models_to_try:
                     models_to_try.append(candidate)
 
@@ -246,7 +250,7 @@ Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown sup
             )
 
             for mod in models_to_try:
-                for attempt in range(2):
+                for attempt in range(3):
                     try:
                         response = self.client.models.generate_content(
                             model=mod,
@@ -263,10 +267,12 @@ Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown sup
                         if any(k in err_msg for k in ["404", "not_found", "no longer available"]):
                             break
                         if "503" in err_msg or "unavailable" in err_msg or "high demand" in err_msg:
-                            time.sleep(2.0)
-                            continue
+                            if attempt < 2:
+                                time.sleep(4.0 * (2 ** attempt) + random.uniform(0, 1))
+                                continue
+                            raise
                         else:
-                            break
+                            raise
                 if response_text:
                     break
 
@@ -351,6 +357,15 @@ Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown sup
                     "Quota d'API dépassé ou facturation requise (429 Resource Exhausted).\n"
                     "Vérifiez vos quotas et l'état de facturation de votre compte sur Google AI Studio ou Google Cloud Console."
                 )
+            elif any(k in err_lower for k in ["503", "unavailable", "high demand"]):
+                return {
+                    "error": "SERVICE_TEMPORAIREMENT_INDISPONIBLE",
+                    "message": (
+                        "Gemini est temporairement saturé (503), malgré les nouvelles tentatives automatiques. "
+                        "Cela ne signifie pas que votre clé est invalide. "
+                        "Attendez quelques minutes, puis relancez l'analyse. Aucun score n'a été calculé."
+                    ),
+                }
             else:
                 diagnostic = f"Erreur lors de l'exécution du modèle LLM : {err_str}"
 

@@ -96,7 +96,7 @@ $env:THE_2027_PDF = "C:\\chemin\\vers\\THE.SustainabilityImpactRatings.METHODOLO
 python run_pipeline.py
 ```
 
-Ne commitez jamais la clé ni le PDF méthodologique. Le modèle sélectionné est `gemini-2.5-pro`. L'abonnement grand public à Gemini Pro et la facturation de l'API Gemini sont distincts : vérifiez l'accès API associé à votre clé. Sans clé, PDF, page effectivement récupérée ou citation exacte, le tableau de bord ne produit aucun score. Une pièce jointe analysable est évaluée comme non publique. Le score reste une **estimation interne**, soumise à validation humaine, et non une décision officielle de THE.
+Ne commitez jamais la clé ni le PDF méthodologique. Le modèle par défaut est `gemini-3.6-flash`, accessible au niveau sans frais sous réserve des quotas et des autorisations du projet. `gemini-3.1-pro-preview` reste proposé pour les projets avec facturation API. Les modèles 2.5 ne sont plus proposés aux nouveaux utilisateurs. Après une mise à jour, redémarrez Streamlit et testez la connexion avec la même clé. L'abonnement grand public à Gemini Pro et la facturation de l'API Gemini sont distincts : vérifiez l'accès API associé à votre clé. Sans clé, PDF, page effectivement récupérée ou citation exacte, le tableau de bord ne produit aucun score. Une pièce jointe analysable est évaluée comme non publique. Le score reste une **estimation interne**, soumise à validation humaine, et non une décision officielle de THE.
 
 `--pilot` et `--export` exécutent encore un ancien corpus fictif de démonstration ; leurs chiffres et rapports ne constituent pas une collecte UC3 vérifiée et ne doivent pas être soumis.
 
