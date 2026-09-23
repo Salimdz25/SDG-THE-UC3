@@ -139,10 +139,12 @@ TEXTE DE LA PREUVE À ÉVALUER :
 
 Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown superflues) respectant rigoureusement ce schéma :
 {{
-  "information_found": "Synthèse factuelle exacte et concise de ce qui est présent dans le texte",
+  "information_found": "Synthèse factuelle exacte et concise en français de ce qui est présent dans le texte",
+  "english_summary_for_the": "A concise, professional English executive summary of the evidence suitable for direct submission into the official Times Higher Education (THE) Impact Ratings portal (describing the action, UC3 entity, quantifiable metrics, and year 2025)",
   "detected_year": 2025 ou null,
   "policy_reviewed_2022_2026": true ou false,
   "justifying_quote": "Citation textuelle exacte (verbatim) de 1 à 3 phrases présentes mot pour mot dans le texte",
+  "quote_english_translation": "Faithful English translation of the justifying quote for international THE reviewers",
   "uc3_entity": "Entité identifiée (Rectorat, Faculté de..., Laboratoire..., ou 'Non identifiée')",
   "quality": "specific" ou "general" ou "not_relevant",
   "quality_justification": "Explication détaillée du choix de la qualité",
@@ -206,6 +208,11 @@ Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown sup
             parsed = json.loads(clean_text)
             if not isinstance(parsed, dict) or parsed.get("quality") not in ("specific", "general", "not_relevant"):
                 raise ValueError("Réponse du modèle incomplète ou format de qualité non conforme")
+
+            if not isinstance(parsed.get("english_summary_for_the"), str):
+                parsed["english_summary_for_the"] = ""
+            if not isinstance(parsed.get("quote_english_translation"), str):
+                parsed["quote_english_translation"] = ""
 
             # 1. Vérification Verbatim mot pour mot de la citation justificative
             quote = parsed.get("justifying_quote", "")

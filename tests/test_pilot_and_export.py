@@ -35,3 +35,11 @@ def test_excel_and_word_exports(tmp_path):
     assert Path(excel_out).stat().st_size > 0
     assert Path(word_out).exists()
     assert Path(word_out).stat().st_size > 0
+
+    # Vérification de la présence des colonnes bilingues dans Excel
+    import pandas as pd
+    df_read = pd.read_excel(excel_out)
+    assert "Information Trouvée (Français)" in df_read.columns
+    assert "Synthèse Officielle THE (Anglais)" in df_read.columns
+    assert "Citation Justificative (Verbatim)" in df_read.columns
+    assert "Traduction Anglaise Citation" in df_read.columns

@@ -297,3 +297,36 @@ def test_unconfigured_api_key_returns_error():
         methodology_question="Question",
     )
     assert res.get("error") == "CLÉ_API_MANQUANTE"
+
+
+def test_bilingual_fields_generation():
+    evidence = "Le Conseil Scientifique de l'UC3 a validé en 2025 un programme de bourses d'excellence."
+    mock_data = {
+        "quality": "specific",
+        "justifying_quote": "Le Conseil Scientifique de l'UC3 a validé en 2025",
+        "is_self_contained": True,
+        "is_link_farm": False,
+        "detected_year": 2025,
+        "information_found": "Validation d'un programme de bourses en 2025.",
+        "english_summary_for_the": "In 2025, Constantine 3 University approved an excellence scholarship program.",
+        "quote_english_translation": "The Scientific Council of UC3 approved in 2025",
+    }
+    google, genai = _mock_genai_client(mock_data)
+    with patch.dict(sys.modules, {"google": google, "google.genai": genai}):
+        evaluator = RealLLMEvaluator(api_key="test")
+        result = evaluator.evaluate_evidence_with_llm(
+            indicator_id="1.3.1",
+            indicator_name="Admission target",
+            indicator_definition="Summary",
+            max_points=3.0,
+            evidence_text=evidence,
+            source_url_or_path="https://univ-constantine3.dz/bourses",
+            methodology_question="Exact question from PDF 2027",
+            source_verified=True,
+        )
+    assert result["quality"] == "specific"
+    assert "english_summary_for_the" in result
+    assert "scholarship program" in result["english_summary_for_the"]
+    assert "quote_english_translation" in result
+    assert "Scientific Council" in result["quote_english_translation"]
+

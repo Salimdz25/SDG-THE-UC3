@@ -12,10 +12,12 @@ class IndicatorFiche:
     indicator_title: str                       # Titre de l'indicateur
     methodological_requirement: str            # Ce que l'indicateur demande exactement selon THE 2027
     information_found: str                     # Fait ou valeur extraite
+    english_summary_for_the: str = ""          # Synthèse officielle en anglais pour le portail THE
     year: Optional[int] = None                 # Année (Priorité 2025)
     source_exact: str = ""                     # URL ou document d'origine
     consultation_date: str = ""                # Date de consultation de la source
     justifying_quote: str = ""                 # Passage directement vérifiable (citation verbatim)
+    quote_english_translation: str = ""        # Traduction anglaise de la citation pour les auditeurs THE
     uc3_entity: str = ""                       # Rectorat, Faculté, Laboratoire, Service...
     quality: str = "non_pertinente"            # "spécifique", "générale", "non_pertinente"
     publicity: str = "interne"                 # "publique" ou "interne"

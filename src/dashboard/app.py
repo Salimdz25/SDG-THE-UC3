@@ -66,18 +66,27 @@ with st.sidebar:
     st.caption("Assistant RAG - Audit THE Impact Ratings 2027")
     st.divider()
 
-    st.markdown("#### 🤖 Configuration du Modèle LLM")
+    st.markdown("#### 🌐 Langue / Interface Language")
+    lang_choice = st.radio(
+        "Langue d'affichage / Language :",
+        ["Français 🇫🇷", "English 🇬🇧"],
+        index=0,
+        horizontal=True
+    )
+    is_en = "English" in lang_choice
+
+    st.markdown("#### 🤖 Configuration du Modèle LLM" if not is_en else "#### 🤖 LLM Model Configuration")
     env_gemini_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or ""
     
     user_api_key = st.text_input(
-        "Clé API Gemini (Google AI Studio) :",
+        "Clé API Gemini (Google AI Studio) :" if not is_en else "Gemini API Key (Google AI Studio):",
         value=env_gemini_key,
         type="password",
         help="Obtenez une clé gratuite sur https://aistudio.google.com/ pour activer l'analyse neuronale réelle."
     )
 
     selected_model = st.selectbox(
-        "Modèle LLM :",
+        "Modèle LLM :" if not is_en else "LLM Model:",
         ["gemini-2.5-pro"],
         index=0,
         help="Utilise votre clé API Gemini. Un abonnement à l'application Gemini ne fournit pas automatiquement l'accès API."
@@ -85,11 +94,11 @@ with st.sidebar:
 
     llm_evaluator = RealLLMEvaluator(api_key=user_api_key, model_name=selected_model)
 
-    if st.button("🔌 Tester la Clé API"):
+    if st.button("🔌 Tester la Clé API" if not is_en else "🔌 Test API Key"):
         if not user_api_key.strip():
-            st.warning("Veuillez d'abord coller votre clé API.")
+            st.warning("Veuillez d'abord coller votre clé API." if not is_en else "Please paste your API key first.")
         else:
-            with st.spinner("Vérification auprès de Google Gemini..."):
+            with st.spinner("Vérification auprès de Google Gemini..." if not is_en else "Connecting to Google Gemini..."):
                 t_res = llm_evaluator.test_connection()
                 if t_res["valid"]:
                     st.success(f"✅ {t_res['message']}")
@@ -97,22 +106,25 @@ with st.sidebar:
                     st.error(f"❌ Erreur : {t_res['message']}")
     
     if llm_evaluator.is_configured():
-        st.success("🟢 **LLM Réel Connecté (Gemini)**")
+        st.success("🟢 **LLM Réel Connecté (Gemini Pro)**" if not is_en else "🟢 **Real LLM Connected (Gemini Pro)**")
     else:
-        st.warning("Clé API Gemini requise : aucun score ne sera attribué sans le modèle.")
+        st.warning("Clé API Gemini requise : aucun score ne sera attribué sans le modèle." if not is_en else "Gemini API Key required: no score calculated without model.")
 
     st.divider()
-    st.markdown("#### 📜 Règles Méthodologiques THE")
-    st.markdown("- **Année Cible :** `2025`")
-    st.markdown("- **Preuve Publique :** URL directe = 1 pt / Fichier joint = 0 pt")
-    st.markdown("- **Autosuffisance :** Annuaire de liens = Rejet")
-    st.markdown("- **Contrôle :** citation littérale exigée, puis validation humaine")
+    st.markdown("#### 📜 Règles Méthodologiques THE" if not is_en else "#### 📜 THE Methodology Rules")
+    st.markdown("- **Année Cible / Target Year :** `2025`")
+    st.markdown("- **Preuve Publique :** URL directe = 1 pt / Fichier joint = 0 pt" if not is_en else "- **Public Evidence:** Direct URL = 1 pt / Attachment = 0 pt")
+    st.markdown("- **Autosuffisance :** Annuaire de liens = Rejet" if not is_en else "- **Self-contained:** Link farm = Rejection")
+    st.markdown("- **Contrôle :** citation littérale exigée, puis validation humaine" if not is_en else "- **Control:** Literal quote required, then human review")
 
 # --- EN-TÊTE PRINCIPAL ---
-st.title("📥 Ingestion & Évaluation de Preuves en Direct (THE 2027)")
+st.title("📥 Ingestion & Évaluation de Preuves en Direct (THE 2027)" if not is_en else "📥 Real-Time Evidence Audit & Submission Assistant (THE 2027)")
 st.markdown(
     "Sélectionnez un indicateur parmi les **17 ODD**, soumettez une preuve (texte, fichier PDF/Word/Excel ou URL), "
     "et laissez l'auditeur LLM analyser la conformité selon le barème officiel."
+    if not is_en else
+    "Select an indicator across the **17 SDGs**, submit evidence (text, PDF/Word/Excel file, or live URL), "
+    "and let the Gemini Pro auditor evaluate compliance against the official THE 2027 methodology."
 )
 st.divider()
 
@@ -397,6 +409,8 @@ if btn_eval:
                 ("Publicité", "PUBLIQUE (+1.0 pt)" if evaluation_output.get("is_public") else "INTERNE / PIÈCE JOINTE (0.0 pt)"),
                 ("Décomposition des points", f"Déclaration: {evaluation_output.get('statement_points', 0.0)} pt | Pertinence: {evaluation_output.get('evidence_points', 0.0)} pt | Publicité: {evaluation_output.get('public_points', 0.0)} pt | Bonus Politique: {evaluation_output.get('policy_bonus_points', 0.0)} pt"),
                 ("Total points THE", f"{evaluation_output.get('the_points_earned', 0.0)} / {evaluation_output.get('the_max_points', 3.0)} pts ({evaluation_output.get('the_percentage', 0.0)}%)"),
+                ("Synthèse en Anglais (Portail THE)", evaluation_output.get("english_summary_for_the", "")),
+                ("Traduction anglaise de la citation", evaluation_output.get("quote_english_translation", "")),
                 ("Niveau de confiance", evaluation_output.get("confidence", "").upper()),
                 ("Lacune ou Alerte méthodologique", evaluation_output.get("gap_or_alert", "")),
                 ("Action proposée", evaluation_output.get("proposed_action", "").upper()),
@@ -405,6 +419,33 @@ if btn_eval:
 
             df_fiche = pd.DataFrame(fiche_rows, columns=["Champ Réglementaire", "Contenu / Décision"])
             st.table(df_fiche)
+
+            # BLOC OFFICIEL DE SOUMISSION AU PORTAIL THE (ANGLAIS)
+            en_summary = evaluation_output.get("english_summary_for_the", "")
+            en_quote = evaluation_output.get("quote_english_translation", "")
+            if en_summary:
+                st.markdown("---")
+                st.markdown("### 🇬🇧 Pack de Soumission Officielle THE (Anglais / English)")
+                st.caption(
+                    "Texte prêt pour le copier-coller direct dans le champ 'Description' du portail Times Higher Education :"
+                    if not is_en else
+                    "Ready to copy-paste into the Times Higher Education submission portal 'Description' field:"
+                )
+                col_sub1, col_sub2 = st.columns([3, 2])
+                with col_sub1:
+                    st.text_area(
+                        "📝 Evidence Description (English - Portal Ready) :",
+                        value=en_summary,
+                        height=120,
+                        help="Copy this directly into the THE portal 'Description' field."
+                    )
+                with col_sub2:
+                    st.text_area(
+                        "💬 Key Verbatim Quote Translated (English) :",
+                        value=en_quote if en_quote else "(Original quote is already in English)",
+                        height=120,
+                        help="English translation of the original verbatim quote for international reviewers."
+                    )
 
             # Alertes spécifiques
             alert_text = evaluation_output.get("gap_or_alert", "")
@@ -418,17 +459,19 @@ if btn_eval:
             # =========================================================================
             # ÉTAPE 5 : EXPORT IMMÉDIAT EN EXCEL & WORD
             # =========================================================================
-            st.markdown("#### 💾 Exporter cette Fiche d'Évaluation")
+            st.markdown("#### 💾 Exporter cette Fiche d'Évaluation" if not is_en else "#### 💾 Export this Evaluation Fiche")
 
             export_fiche_obj = IndicatorFiche(
                 odd_indicator=ind_id,
                 indicator_title=ind_name,
                 methodological_requirement=ind_def,
                 information_found=evaluation_output.get("information_found", ""),
+                english_summary_for_the=evaluation_output.get("english_summary_for_the", ""),
                 year=evaluation_output.get("detected_year"),
                 source_exact=source_path_declared,
                 consultation_date=datetime.now().strftime("%Y-%m-%d %H:%M"),
                 justifying_quote=evaluation_output.get("justifying_quote", ""),
+                quote_english_translation=evaluation_output.get("quote_english_translation", ""),
                 uc3_entity=evaluation_output.get("uc3_entity", entity_input),
                 quality=evaluation_output.get("quality", "non_pertinente"),
                 publicity="publique" if evaluation_output.get("is_public") else "interne",
