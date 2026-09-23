@@ -211,7 +211,15 @@ with col_filter:
 
 # Liste des indicateurs pour cet ODD filtrés dynamiquement
 raw_indicators_list = framework.get_indicators_for_sdg(chosen_sdg_num)
-indicators_list = framework.filter_indicators(raw_indicators_list, chosen_filter)
+if hasattr(framework, "filter_indicators"):
+    indicators_list = framework.filter_indicators(raw_indicators_list, chosen_filter)
+else:
+    st.cache_resource.clear()
+    import importlib
+    import src.methodology.the_2027_framework as fw_mod
+    importlib.reload(fw_mod)
+    framework = fw_mod.THE2027Framework()
+    indicators_list = framework.filter_indicators(raw_indicators_list, chosen_filter)
 
 # Si aucun indicateur ne correspond au filtre dans cet ODD
 if not indicators_list:
