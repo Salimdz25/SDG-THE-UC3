@@ -19,7 +19,7 @@ from src.security.sanitizer import sanitize_for_llm
 
 
 class RealLLMEvaluator:
-    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-2.5-pro", client: Any = None):
+    def __init__(self, api_key: Optional[str] = None, model_name: str = "gemini-3.1-pro-preview", client: Any = None):
         raw_key = (api_key or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or "").strip()
         raw_key = raw_key.strip('"').strip("'").strip()
         self.api_key = raw_key if raw_key else None
@@ -52,34 +52,60 @@ class RealLLMEvaluator:
         return self.client is not None and bool(self.api_key)
 
     def test_connection(self) -> Dict[str, Any]:
-        """Teste la validité de la clé API avec un appel minimal."""
+        """Teste la validité de la clé API avec un appel minimal et bascule automatique de modèle si 404."""
         if not self.is_configured():
             return {"valid": False, "message": "Aucune clé API renseignée. Veuillez renseigner GEMINI_API_KEY."}
-        try:
-            resp = self.client.models.generate_content(
-                model=self.model_name,
-                contents="Réponds par le mot: OK"
+
+        models_to_test = [self.model_name]
+        for candidate in ["gemini-3.1-pro-preview", "gemini-2.5-flash", "gemini-3-flash-preview"]:
+            if candidate not in models_to_test:
+                models_to_test.append(candidate)
+
+        last_err = None
+        for mod in models_to_test:
+            try:
+                resp = self.client.models.generate_content(
+                    model=mod,
+                    contents="Réponds par le mot: OK"
+                )
+                if resp and resp.text:
+                    if mod != self.model_name:
+                        self.model_name = mod
+                    return {
+                        "valid": True,
+                        "model": mod,
+                        "message": f"Clé API valide ! Modèle '{mod}' opérationnel."
+                    }
+            except Exception as e:
+                last_err = e
+                err_str = str(e).lower()
+                # Si erreur 404 de modèle indisponible, essayer le modèle suivant
+                if any(k in err_str for k in ["404", "not_found", "no longer available"]):
+                    continue
+                # Si erreur d'authentification ou quota, ne pas boucler inutilement
+                break
+
+        err_str = str(last_err)
+        err_lower = err_str.lower()
+        if any(k in err_lower for k in ["403", "401", "api_key_invalid", "permission_denied", "unregistered"]):
+            msg = (
+                "Erreur d'authentification (403/401) : Clé API invalide ou accès refusé.\n"
+                "Rappel : Votre abonnement grand public à l'application Gemini n'inclut pas automatiquement l'accès à l'API.\n"
+                "Créez une clé API dédiée sur Google AI Studio (https://aistudio.google.com/)."
             )
-            if resp and resp.text:
-                return {"valid": True, "message": f"Clé API valide ! Modèle '{self.model_name}' opérationnel."}
-            return {"valid": False, "message": "Réponse vide reçue de l'API Gemini."}
-        except Exception as e:
-            err_str = str(e)
-            err_lower = err_str.lower()
-            if any(k in err_lower for k in ["403", "401", "api_key_invalid", "permission_denied", "unregistered"]):
-                msg = (
-                    "Erreur d'authentification (403/401) : Clé API invalide ou accès refusé.\n"
-                    "Rappel : Votre abonnement grand public à l'application Gemini n'inclut pas automatiquement l'accès à l'API.\n"
-                    "Créez une clé API dédiée sur Google AI Studio (https://aistudio.google.com/)."
-                )
-            elif any(k in err_lower for k in ["429", "resource_exhausted", "quota", "billing"]):
-                msg = (
-                    "Quota d'API dépassé ou facturation requise (429 Resource Exhausted).\n"
-                    "Vérifiez vos quotas sur Google AI Studio ou activez un compte de facturation."
-                )
-            else:
-                msg = f"Erreur de connexion API Gemini : {err_str}"
-            return {"valid": False, "message": msg}
+        elif any(k in err_lower for k in ["429", "resource_exhausted", "quota", "billing"]):
+            msg = (
+                "Quota d'API dépassé ou facturation requise (429 Resource Exhausted).\n"
+                "Vérifiez vos quotas sur Google AI Studio ou activez un compte de facturation."
+            )
+        elif any(k in err_lower for k in ["404", "not_found", "no longer available"]):
+            msg = (
+                f"Modèle '{self.model_name}' indisponible (404 Not Found).\n"
+                f"Google recommande d'utiliser 'gemini-3.1-pro-preview'. Détails : {err_str}"
+            )
+        else:
+            msg = f"Erreur de connexion API Gemini : {err_str}"
+        return {"valid": False, "message": msg}
 
     def evaluate_evidence_with_llm(
         self,
@@ -207,6 +233,10 @@ Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown sup
             from google.genai import types
 
             models_to_try = [self.model_name]
+            for candidate in ["gemini-3.1-pro-preview", "gemini-2.5-flash", "gemini-3-flash-preview"]:
+                if candidate not in models_to_try:
+                    models_to_try.append(candidate)
+
             response_text = None
             last_err = None
 
@@ -225,10 +255,13 @@ Tu dois répondre UNIQUEMENT par un objet JSON valide (sans balises markdown sup
                         )
                         if response and response.text:
                             response_text = response.text
+                            self.model_name = mod  # Conserver le modèle validé
                             break
                     except Exception as e_mod:
                         last_err = e_mod
                         err_msg = str(e_mod).lower()
+                        if any(k in err_msg for k in ["404", "not_found", "no longer available"]):
+                            break
                         if "503" in err_msg or "unavailable" in err_msg or "high demand" in err_msg:
                             time.sleep(2.0)
                             continue

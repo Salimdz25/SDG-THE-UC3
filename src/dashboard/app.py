@@ -100,9 +100,14 @@ with st.sidebar:
 
     selected_model = st.selectbox(
         "Modèle LLM :" if not is_en else "LLM Model:",
-        ["gemini-2.5-pro"],
+        [
+            "gemini-3.1-pro-preview",
+            "gemini-2.5-flash",
+            "gemini-3-flash-preview",
+            "gemini-2.5-pro",
+        ],
         index=0,
-        help="Utilise votre clé API Gemini. Un abonnement grand public ne fournit pas l'accès API développeur."
+        help="Recommandé par Google : gemini-3.1-pro-preview (ou gemini-2.5-flash)."
     )
 
     llm_evaluator = RealLLMEvaluator(api_key=effective_api_key, model_name=selected_model)
@@ -110,18 +115,29 @@ with st.sidebar:
     if st.button("🔌 Tester la Clé API" if not is_en else "🔌 Test API Key"):
         if not effective_api_key.strip():
             st.warning("Veuillez d'abord renseigner une clé API ou configurer GEMINI_API_KEY." if not is_en else "Please provide an API key or configure GEMINI_API_KEY.")
+            st.session_state["gemini_status"] = "missing"
         else:
             with st.spinner("Vérification auprès de Google Gemini..." if not is_en else "Connecting to Google Gemini..."):
                 t_res = llm_evaluator.test_connection()
                 if t_res["valid"]:
                     st.success(f"✅ {t_res['message']}")
+                    st.session_state["gemini_status"] = "connected"
+                    st.session_state["gemini_active_model"] = t_res.get("model", llm_evaluator.model_name)
                 else:
-                    st.error(f"❌ Erreur : {t_res['message']}")
-    
-    if llm_evaluator.is_configured():
-        st.success("🟢 **LLM Réel Connecté (Gemini Pro)**" if not is_en else "🟢 **Real LLM Connected (Gemini Pro)**")
+                    st.error(f"❌ {t_res['message']}")
+                    st.session_state["gemini_status"] = "error"
+                    st.session_state["gemini_error_detail"] = t_res["message"]
+
+    gem_status = st.session_state.get("gemini_status")
+    if gem_status == "connected":
+        active_mod = st.session_state.get("gemini_active_model", selected_model)
+        st.success(f"🟢 **LLM Réel Validé ({active_mod})**" if not is_en else f"🟢 **Real LLM Verified ({active_mod})**")
+    elif gem_status == "error":
+        st.error("🔴 **Connexion Non Établie (Erreur API)**" if not is_en else "🔴 **Connection Failed (API Error)**")
+    elif effective_api_key.strip():
+        st.info("🟡 **Clé Renseignée (Cliquez sur 'Tester la Clé API')**" if not is_en else "🟡 **API Key Provided (Click 'Test API Key')**")
     else:
-        st.warning("Clé API Gemini requise : aucun score ne sera attribué sans le modèle." if not is_en else "Gemini API Key required: no score calculated without model.")
+        st.warning("⚪ Clé API Gemini requise : aucun score ne sera attribué sans le modèle." if not is_en else "⚪ Gemini API Key required: no score calculated without model.")
 
     st.divider()
     st.markdown("#### 📜 Règles Méthodologiques THE" if not is_en else "#### 📜 THE Methodology Rules")
@@ -515,8 +531,13 @@ if btn_eval:
                 source_is_attachment=source_is_attachment
             )
             if "error" in llm_res:
+                st.session_state["gemini_status"] = "error"
+                st.session_state["gemini_error_detail"] = llm_res.get("message", "")
                 st.error(f"Évaluation impossible : {llm_res.get('message')}. Aucun score calculé.")
                 st.stop()
+            else:
+                st.session_state["gemini_status"] = "connected"
+                st.session_state["gemini_active_model"] = llm_evaluator.model_name
             evaluation_output = llm_res
             used_real_llm = True
 
